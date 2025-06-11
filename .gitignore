@@ -8,4 +8,4 @@ __pycache__/
 # Flask specific
 instance/
 .flaskenv
-venv/
+myenv/
