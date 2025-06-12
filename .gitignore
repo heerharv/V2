@@ -3,9 +3,9 @@ __pycache__/
 *.pyc
 
 # Environment variables
+myenv/
 .env
 
 # Flask specific
 instance/
 .flaskenv
-myenv/

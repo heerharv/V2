@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JIRA Project Dashboard</title>
+    <title>UNCIA Project Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -12,521 +12,1200 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 20px;
+            background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+            color: white;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
+        /* Header Section */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%);
+            backdrop-filter: blur(20px);
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
-        .project-selector {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .project-selector select {
-            padding: 10px 20px;
-            font-size: 1.1em;
-            border-radius: 25px;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.2);
-            color: white;
-            cursor: pointer;
-            min-width: 200px;
-        }
-
-        .project-selector select option {
-            background: #764ba2;
-            color: white;
-        }
-
-        .project-selector select:focus {
-            outline: none;
-            border-color: rgba(255,255,255,0.5);
-        }
-
-        .nav {
+        /* Top Navigation Bar */
+        .top-nav {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
         }
 
-        .nav button {
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 25px;
+        .logo-section {
+            flex-shrink: 0;
+        }
+
+        .uncia-logo {
+            height: 3rem;
+            width: auto;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .teams-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .teams-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            background: linear-gradient(45deg, #1e40af, #7c3aed);
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .join-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: all 0.3s ease;
         }
 
-        .nav button:hover, .nav button.active {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
+        .join-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
         }
 
-        .content {
-            padding: 30px;
+        /* Main Title Section */
+        .title-section {
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
-        .dashboard-grid {
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .project-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .tab-list {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button:hover:not(.active) {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem 3rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Content Cards */
+        .content-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            fill: currentColor;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
         }
 
-        .stat-card h3 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .stat-card:hover::before {
+            left: 100%;
         }
 
-        .stat-card p {
-            font-size: 1.1em;
-            opacity: 0.9;
+        .stat-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            margin: 0 auto 1rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .section {
-            margin-bottom: 30px;
-            display: none;
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: white;
         }
 
-        .section.active {
-            display: block;
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
         }
 
-        .section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #667eea;
-        }
-
-        .issues-grid {
+        /* Two Column Layout */
+        .two-column {
             display: grid;
-            gap: 15px;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
         }
 
-        .issue-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
+        .health-section h3 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
         }
 
-        .issue-card:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-
-        .issue-header {
+        .health-item {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 1rem;
         }
 
-        .issue-key {
-            background: #667eea;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
+        .health-label {
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: capitalize;
         }
 
-        .issue-status {
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            font-weight: bold;
-        }
-
-        .status-todo {
-            background: #ffc107;
-            color: #333;
-        }
-
-        .status-progress {
-            background: #17a2b8;
-            color: white;
-        }
-
-        .status-done {
-            background: #28a745;
-            color: white;
-        }
-
-        .issue-summary {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .issue-meta {
-            display: flex;
-            gap: 15px;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .assignee {
+        .health-progress {
             display: flex;
             align-items: center;
-            gap: 5px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2em;
-            color: #666;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+            gap: 1rem;
         }
 
         .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e9ecef;
-            border-radius: 10px;
+            width: 5rem;
+            height: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0.25rem;
             overflow: hidden;
-            margin-top: 10px;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #28a745, #20c997);
-            transition: width 0.3s ease;
+            border-radius: 0.25rem;
+            transition: width 0.8s ease;
+        }
+
+        .progress-green { background: #22c55e; }
+        .progress-yellow { background: #eab308; }
+        .progress-red { background: #ef4444; }
+
+        .health-value {
+            color: white;
+            font-weight: 600;
+            min-width: 2.5rem;
+            text-align: right;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        /* Action Items and Risks */
+        .action-risk-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .list-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-title {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .item-meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+
+        .priority-high { border-left-color: #ef4444; }
+        .priority-medium { border-left-color: #eab308; }
+        .priority-low { border-left-color: #22c55e; }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-high { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .badge-medium { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .badge-low { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container, .main-content {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            
+            .two-column, .action-risk-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .tab-list {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .top-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>JIRA Project Dashboard</h1>
-            <div class="project-selector">
-                <select id="project-selector" onchange="changeProject(this.value)">
-                    <option value="">Select a Project</option>
-                </select>
-            </div>
-            <div class="nav">
-                <button onclick="showSection('dashboard')" class="active">Dashboard</button>
-                <button onclick="showSection('issues')">All Issues</button>
-                <button onclick="showSection('users')">Team Members</button>
-            </div>
-        </div>
-
-        <div class="content">
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="section active">
-                <div class="dashboard-grid">
-                    <div class="stat-card">
-                        <h3 id="total-issues">-</h3>
-                        <p>Total Issues</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="todo-issues">-</h3>
-                        <p>To Do</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="progress-issues">-</h3>
-                        <p>In Progress</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="done-issues">-</h3>
-                        <p>Completed</p>
-                    </div>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="header-container">
+            <!-- Top Navigation -->
+            <div class="top-nav">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='images/Uncia2 1.jpg') }}" alt="UNCIA Logo" class="uncia-logo" />
                 </div>
 
-                <h2>Project Progress</h2>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                </div>
-                <p style="text-align: center; margin-top: 10px;">
-                    <span id="progress-text">0% Complete</span>
-                </p>
+                <div class="nav-controls">
+                    <div class="teams-badge">
+                        <div class="teams-icon">
+                            <svg viewBox="0 0 24 24" style="width: 1rem; height: 1rem; fill: white;">
+                                <path d="M20.625 5.25H15.75v13.5h4.875c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125z"/>
+                                <path d="M14.25 5.25H9.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125H14.25V5.25z"/>
+                                <circle cx="12" cy="12" r="2.25"/>
+                            </svg>
+                        </div>
+                        <span id="teams-status-text" style="color: white; font-size: 0.9rem; font-weight: 500;">Teams Disconnected</span>
+                        <div class="status-dot" id="teams-status-dot" style="background: #ef4444;"></div>
+                    </div>
 
-                <h2>Recent Activity</h2>
-                <div id="recent-issues" class="issues-grid">
-                    <div class="loading">Loading recent activity...</div>
+                    <button class="join-btn" id="join-meeting-btn">
+                        <svg style="width: 1rem; height: 1rem; fill: currentColor;" viewBox="0 0 24 24">
+                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                        </svg>
+                        Join Meeting
+                    </button>
                 </div>
             </div>
 
-            <!-- Issues Section -->
-            <div id="issues" class="section">
-                <h2>All Issues</h2>
-                <div id="all-issues" class="issues-grid">
-                    <div class="loading">Loading issues...</div>
+            <!-- Main Title -->
+            <div class="title-section">
+                <h1 class="main-title">UNCIA Project Dashboard</h1>
+                <div class="project-badge">
+                    <div class="status-dot"></div>
+                    <span id="project-display-name" style="color: white; font-weight: 500;">Client & Project Management Platform</span>
                 </div>
             </div>
 
-            <!-- Users Section -->
-            <div id="users" class="section">
-                <h2>Team Members</h2>
-                <div id="team-members" class="issues-grid">
-                    <div class="loading">Loading team members...</div>
+            <!-- Project Selector -->
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <label for="project-select" style="color: white; margin-right: 0.5rem;">Select Project:</label>
+                <select id="project-select" style="padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.15); color: white; font-size: 1rem;"></select>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <div class="tab-list">
+                    <button class="tab-button active" onclick="showTab('overview')">Overview</button>
+                    <button class="tab-button" onclick="showTab('progress')">Progress</button>
+                    <button class="tab-button" onclick="showTab('budget')">Budget</button>
+                    <button class="tab-button" onclick="showTab('deliverables')">Deliverables</button>
+                    <button class="tab-button" onclick="showTab('risks')">Risks</button>
+                    <button class="tab-button" onclick="showTab('team')">Team</button>
                 </div>
             </div>
         </div>
-    </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <h2 class="section-title">Executive Summary</h2>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-number">85</div>
+                        <div class="stat-label">Total Issues</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">
+                            <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-number">23</div>
+                        <div class="stat-label">To Do</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #14b8a6);">
+                            <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-number">18</div>
+                        <div class="stat-label">In Progress</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f97316, #ef4444);">
+                            <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-number">44</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                </div>
+
+                <!-- Health Metrics Section -->
+                <div class="two-column">
+                    <div class="health-section">
+                        <h3>Project Health Score</h3>
+                        <div class="health-item">
+                            <span class="health-label">Overall Health</span>
+                            <div class="health-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-green" style="width: 85%;"></div>
+                                </div>
+                                <span class="health-value">85%</span>
+                            </div>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Schedule</span>
+                            <div class="health-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-yellow" style="width: 78%;"></div>
+                                </div>
+                                <span class="health-value">78%</span>
+                            </div>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Budget</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill progress-green" style="width: 92%;"></div>
+                            </div>
+                            <span class="health-value">92%</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Quality</span>
+                            <div class="health-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill progress-green" style="width: 85%;"></div>
+                                </div>
+                                <span class="health-value">85%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="health-section">
+                        <h3>Key Metrics</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-value" style="color: #22c55e;">85%</div>
+                                <div class="metric-label">On Schedule</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" style="color: #3b82f6;">92%</div>
+                                <div class="metric-label">Budget Health</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" style="color: #8b5cf6;">3</div>
+                                <div class="metric-label">Active Risks</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-value" style="color: #f97316;">2</div>
+                                <div class="metric-label">Pending Approvals</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Items and Risks -->
+                <div class="action-risk-grid">
+                    <div class="content-section">
+                        <div class="section-header">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15 17h5l-5 5v-5zM4 1h5v5H4V1zm0 7h5v5H4V8zm0 7h5v5H4v-5z"/>
+                            </svg>
+                            <h3 class="section-title">Action Items</h3>
+                        </div>
+                        <div class="item-list" id="action-items-list">
+                            <div class="list-item priority-high">
+                                <div class="item-header">
+                                    <div class="item-title">Review and approve UI mockups</div>
+                                    <span class="badge badge-high">High</span>
+                                </div>
+                                <div class="item-meta">John Smith • Due: Jan 12, 2025</div>
+                            </div>
+                            <div class="list-item priority-medium">
+                                <div class="item-header">
+                                    <div class="item-title">Provide feedback on technical specifications</div>
+                                    <span class="badge badge-medium">Medium</span>
+                                </div>
+                                <div class="item-meta">Sarah Johnson • Due: Jan 10, 2025</div>
+                            </div>
+                            <div class="list-item priority-low">
+                                <div class="item-header">
+                                    <div class="item-title">Schedule next milestone review meeting</div>
+                                    <span class="badge badge-low">Low</span>
+                                </div>
+                                <div class="item-meta">Mike Davis • Due: Jan 8, 2025</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">
+                            <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <h3 class="section-title">Active Risks</h3>
+                        </div>
+                        <div class="item-list" id="risks-list">
+                            <div class="list-item priority-high">
+                                <div class="item-header">
+                                    <div class="item-title">Third-party API Integration Delays</div>
+                                    <span class="badge badge-high">High</span>
+                                </div>
+                                <div class="item-meta">Identified backup API providers and parallel development approach</div>
+                            </div>
+                            <div class="list-item priority-medium">
+                                <div class="item-header">
+                                    <div class="item-title">Resource Availability During Holidays</div>
+                                    <span class="badge badge-medium">Medium</span>
+                                </div>
+                                <div class="item-meta">Adjusted timeline and secured additional contractor resources</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other tabs content would go here -->
+        <div id="progress" class="tab-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <h2 class="section-title">Project Progress</h2>
+                </div>
+                <div class="progress-summary" style="margin-bottom: 2rem;">
+                    <p style="color: rgba(255,255,255,0.8); font-size: 1.1rem;">Overall progress snapshot:</p>
+                    <div class="progress-bar" style="width: 100%; height: 1.5rem; background: rgba(255,255,255,0.2); border-radius: 0.75rem; overflow: hidden; margin-top: 1rem;">
+                        <div id="overall-progress-fill" class="progress-fill progress-green" style="width: 0%; height: 100%; border-radius: 0.75rem; transition: width 0.8s ease;"></div>
+                    </div>
+                    <p id="overall-progress-value" style="color: white; font-weight: 600; text-align: center; margin-top: 0.5rem;">0% Completed</p>
+                </div>
+
+                <div class="section-header">
+                    <h3 class="section-title">Recent Activities</h3>
+                </div>
+                <div class="item-list" id="recent-activities-list">
+                    <p style="color: rgba(255,255,255,0.7); text-align: center; padding: 1rem;">Loading recent activities...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="budget" class="tab-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                    </svg>
+                    <h2 class="section-title">Budget Overview</h2>
+                </div>
+                <div class="metrics-grid" id="budget-metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #22c55e;" id="total-budget">$0</div>
+                        <div class="metric-label">Total Budget</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #f97316;" id="spent-budget">$0</div>
+                        <div class="metric-label">Budget Spent</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #3b82f6;" id="remaining-budget">$0</div>
+                        <div class="metric-label">Remaining Budget</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" style="color: #eab308;" id="budget-burn-rate">0%</div>
+                        <div class="metric-label">Burn Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="deliverables" class="tab-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                    </svg>
+                    <h2 class="section-title">Deliverables</h2>
+                </div>
+                <div class="item-list" id="deliverables-list">
+                    <p style="color: rgba(255,255,255,0.7); text-align: center; padding: 2rem;">Loading deliverables...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="team" class="tab-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 20v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 4a4 4 0 100 8 4 4 0 000-8z"/>
+                    </svg>
+                    <h2 class="section-title">Project Team</h2>
+                </div>
+                <div class="team-list" id="team-members-list">
+                    <p style="color: rgba(255,255,255,0.7); text-align: center; padding: 2rem;">Loading team members...</p>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
-        const API_BASE = '/api/jira';
-        let currentProjectKey = '';
+        // Global state
+        let currentProject = null;
+        let isLoading = false;
+        let availableProjects = [];
 
-        function showSection(sectionName) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
+        // Utility functions
+        function showLoading() {
+            isLoading = true;
+            document.querySelectorAll('.stat-number, .metric-value, .health-value').forEach(el => {
+                el.innerHTML = '<div class="loading-spinner"></div>';
+            });
+        }
+
+        function hideLoading() {
+            isLoading = false;
+            document.querySelectorAll('.loading-spinner').forEach(el => {
+                el.parentElement.innerHTML = '0';
+            });
+        }
+
+        function showError(message) {
+            console.error(message);
+            // You could add a toast notification here
+        }
+
+        // Tab navigation
+        function showTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
             
             // Remove active class from all buttons
-            document.querySelectorAll('.nav button').forEach(button => {
+            document.querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('active');
             });
             
-            // Show selected section
-            document.getElementById(sectionName).classList.add('active');
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
             
             // Add active class to clicked button
             event.target.classList.add('active');
-            
-            // Load data for the section if not already loaded
-            if (sectionName === 'issues' && !document.getElementById('all-issues').dataset.loaded) {
-                loadAllIssues();
-            } else if (sectionName === 'users' && !document.getElementById('team-members').dataset.loaded) {
-                loadUsers();
+        }
+
+        // API calls
+        async function fetchProjectStats() {
+            try {
+                const response = await fetch(`/api/project/stats?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch project stats');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching project stats: ' + error.message);
+                return null;
             }
         }
 
-        function getStatusClass(status) {
-            const statusLower = status.toLowerCase();
-            if (statusLower.includes('todo') || statusLower.includes('open') || statusLower.includes('backlog')) {
-                return 'status-todo';
-            } else if (statusLower.includes('progress') || statusLower.includes('development')) {
-                return 'status-progress';
-            } else if (statusLower.includes('done') || statusLower.includes('closed') || statusLower.includes('resolved')) {
-                return 'status-done';
+        async function fetchProjectHealth() {
+            try {
+                const response = await fetch(`/api/project/health?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch project health');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching project health: ' + error.message);
+                return null;
             }
-            return 'status-todo';
         }
 
-        function formatDate(dateString) {
-            if (!dateString) return 'Not set';
-            const date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        async function fetchActionItems() {
+            try {
+                const response = await fetch(`/api/project/action-items?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch action items');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching action items: ' + error.message);
+                return null;
+            }
         }
 
-        function createIssueCard(issue, isRecent = false) {
-            const statusClass = getStatusClass(issue.status.name || issue.status);
-            const assignee = typeof issue.assignee === 'string' ? issue.assignee : issue.assignee.name;
-            const status = typeof issue.status === 'string' ? issue.status : issue.status.name;
+        async function fetchRisks() {
+            try {
+                const response = await fetch(`/api/project/risks?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch risks');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching risks: ' + error.message);
+                return null;
+            }
+        }
+
+        async function fetchProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                if (!response.ok) throw new Error('Failed to fetch projects');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching projects: ' + error.message);
+                return [];
+            }
+        }
+
+        async function fetchProjectProgress() {
+            try {
+                const response = await fetch(`/api/project/progress?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch project progress');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching project progress: ' + error.message);
+                return null;
+            }
+        }
+
+        async function fetchProjectTeam() {
+            try {
+                const response = await fetch(`/api/project/team?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch project team');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching project team: ' + error.message);
+                return null;
+            }
+        }
+
+        async function fetchProjectBudget() {
+            try {
+                const response = await fetch('/api/project/budget');
+                if (!response.ok) throw new Error('Failed to fetch project budget');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching project budget: ' + error.message);
+                return null;
+            }
+        }
+
+        async function fetchProjectDeliverables() {
+            try {
+                const response = await fetch(`/api/project/deliverables?project=${currentProject}`);
+                if (!response.ok) throw new Error('Failed to fetch project deliverables');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching project deliverables: ' + error.message);
+                return null;
+            }
+        }
+
+        async function fetchTeamsAuthStatus() {
+            try {
+                const response = await fetch('/api/teams/auth-status');
+                if (!response.ok) throw new Error('Failed to fetch Teams auth status');
+                return await response.json();
+            } catch (error) {
+                showError('Error fetching Teams auth status: ' + error.message);
+                return { authenticated: false };
+            }
+        }
+
+        // Update UI functions
+        function updateStats(stats) {
+            if (!stats) return;
             
-            return `
-                <div class="issue-card">
-                    <div class="issue-header">
-                        <span class="issue-key">${issue.key}</span>
-                        <span class="issue-status ${statusClass}">${status}</span>
-                    </div>
-                    <div class="issue-summary">${issue.summary}</div>
-                    <div class="issue-meta">
-                        <div class="assignee">
-                            <strong>👤 ${assignee}</strong>
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers[0].textContent = stats.totalIssues || 0;
+            statNumbers[1].textContent = stats.toDo || 0;
+            statNumbers[2].textContent = stats.inProgress || 0;
+            statNumbers[3].textContent = stats.completed || 0;
+        }
+
+        function updateHealthMetrics(health) {
+            if (!health) return;
+
+            // Update health scores
+            const healthItems = document.querySelectorAll('.health-item');
+            healthItems[0].querySelector('.progress-fill').style.width = `${health.overall}%`;
+            healthItems[0].querySelector('.health-value').textContent = `${health.overall}%`;
+            
+            healthItems[1].querySelector('.progress-fill').style.width = `${health.schedule}%`;
+            healthItems[1].querySelector('.health-value').textContent = `${health.schedule}%`;
+            
+            healthItems[2].querySelector('.progress-fill').style.width = `${health.budget}%`;
+            healthItems[2].querySelector('.health-value').textContent = `${health.budget}%`;
+            
+            healthItems[3].querySelector('.progress-fill').style.width = `${health.quality}%`;
+            healthItems[3].querySelector('.health-value').textContent = `${health.quality}%`;
+
+            // Update key metrics
+            const metrics = document.querySelectorAll('.metric-value');
+            metrics[0].textContent = `${health.onSchedule}%`;
+            metrics[1].textContent = `${health.budgetHealth}%`;
+            metrics[2].textContent = health.activeRisks || 0;
+            metrics[3].textContent = health.pendingApprovals || 0;
+        }
+
+        function updateActionItems(items) {
+            if (!items || !items.length) return;
+
+            const container = document.getElementById('action-items-list');
+            if (container) {
+                container.innerHTML = items.map(item => `
+                    <div class="list-item priority-${item.priority.toLowerCase()}">
+                        <div class="item-header">
+                            <div class="item-title">${item.title}</div>
+                            <span class="badge badge-${item.priority.toLowerCase()}">${item.priority}</span>
                         </div>
-                        ${issue.priority ? `<div>🔥 ${typeof issue.priority === 'string' ? issue.priority : issue.priority.name}</div>` : ''}
-                        <div>📅 ${formatDate(issue.updated || issue.created)}</div>
+                        <div class="item-meta">${item.assignee} • Due: ${new Date(item.dueDate).toLocaleDateString()}</div>
                     </div>
-                    ${issue.description ? `<div style="margin-top: 10px; font-size: 0.9em; color: #666;">${issue.description.substring(0, 100)}${issue.description.length > 100 ? '...' : ''}</div>` : ''}
-                </div>
-            `;
+                `).join('');
+            } else {
+                console.error("Action items container not found (using ID).");
+            }
         }
 
-        // Load available projects on page load
-        async function loadProjects() {
-            try {
-                const response = await fetch(`${API_BASE}/find-projects`);
-                const data = await response.json();
-                
-                if (response.ok && data.projects) {
-                    const selector = document.getElementById('project-selector');
-                    selector.innerHTML = '<option value="">Select a Project</option>';
-                    
-                    data.projects.forEach(project => {
-                        const option = document.createElement('option');
-                        option.value = project.key;
-                        option.textContent = `${project.name} (${project.key})`;
-                        selector.appendChild(option);
-                    });
-                } else {
-                    throw new Error(data.error || 'Failed to load projects');
+        function updateRisks(risks) {
+            if (!risks || !risks.length) return;
+
+            const container = document.getElementById('risks-list');
+            if (container) {
+                container.innerHTML = risks.map(risk => `
+                    <div class="list-item priority-${risk.priority.toLowerCase()}">
+                        <div class="item-header">
+                            <div class="item-title">${risk.title}</div>
+                            <span class="badge badge-${risk.priority.toLowerCase()}">${risk.priority}</span>
+                        </div>
+                        <div class="item-meta">${risk.mitigation}</div>
+                    </div>
+                `).join('');
+            } else {
+                console.error("Risks container not found (using ID).");
+            }
+        }
+
+        function updateProgress(progress) {
+            if (!progress) return;
+
+            const overallProgressFill = document.getElementById('overall-progress-fill');
+            const overallProgressValue = document.getElementById('overall-progress-value');
+            const recentActivitiesList = document.getElementById('recent-activities-list');
+
+            if (overallProgressFill) {
+                overallProgressFill.style.width = `${progress.overall_completion}%`;
+            }
+            if (overallProgressValue) {
+                overallProgressValue.textContent = `${progress.overall_completion}% Completed`;
+            }
+
+            if (recentActivitiesList) {
+                recentActivitiesList.innerHTML = progress.recent_activities.map(activity => `
+                    <div class="list-item">
+                        <div class="item-header">
+                            <div class="item-title">${activity.title}</div>
+                            <span class="badge">${activity.status}</span>
+                        </div>
+                        <div class="item-meta">${activity.creator} • ${new Date(activity.updated).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            } else {
+                console.error("Recent activities container not found.");
+            }
+        }
+
+        function updateTeam(team) {
+            if (!team || !team.length) return;
+
+            const teamMembersList = document.getElementById('team-members-list');
+            if (teamMembersList) {
+                teamMembersList.innerHTML = team.map(member => `
+                    <div class="list-item">
+                        <div class="item-header">
+                            <img src="${member.avatarUrl}" alt="${member.displayName}'s avatar" style="width: 2.5rem; height: 2.5rem; border-radius: 50%; margin-right: 1rem;">
+                            <div class="item-title">${member.displayName}</div>
+                        </div>
+                        <div class="item-meta">${member.emailAddress}</div>
+                    </div>
+                `).join('');
+            } else {
+                console.error("Team members list container not found.");
+            }
+        }
+
+        function updateBudget(budget) {
+            if (!budget) return;
+
+            const totalBudget = document.getElementById('total-budget');
+            const spentBudget = document.getElementById('spent-budget');
+            const remainingBudget = document.getElementById('remaining-budget');
+            const budgetBurnRate = document.getElementById('budget-burn-rate');
+
+            if (totalBudget) totalBudget.textContent = `$${budget.totalBudget.toLocaleString()}`;
+            if (spentBudget) spentBudget.textContent = `$${budget.spentBudget.toLocaleString()}`;
+            if (remainingBudget) remainingBudget.textContent = `$${budget.remainingBudget.toLocaleString()}`;
+            if (budgetBurnRate) budgetBurnRate.textContent = `${budget.burnRate}%`;
+        }
+
+        function updateDeliverables(deliverables) {
+            if (!deliverables || !deliverables.length) return;
+
+            const deliverablesList = document.getElementById('deliverables-list');
+            if (deliverablesList) {
+                deliverablesList.innerHTML = deliverables.map(item => `
+                    <div class="list-item">
+                        <div class="item-header">
+                            <div class="item-title">${item.title}</div>
+                            <span class="badge">${item.status}</span>
+                        </div>
+                        <div class="item-meta">${item.creator} • ${new Date(item.resolutionDate).toLocaleDateString()}</div>
+                    </div>
+                `).join('');
+            } else {
+                console.error("Deliverables list container not found.");
+            }
+        }
+
+        function updateTeamsAuthStatus(status) {
+            const statusText = document.getElementById('teams-status-text');
+            const statusDot = document.getElementById('teams-status-dot');
+            const joinBtn = document.getElementById('join-meeting-btn');
+
+            if (status.authenticated) {
+                if (statusText) statusText.textContent = 'Teams Connected';
+                if (statusDot) statusDot.style.background = '#22c55e'; // Green
+                if (joinBtn) {
+                    joinBtn.onclick = () => console.log("Teams is connected. Ready to create/join meeting!");
+                    joinBtn.textContent = "Create Meeting"; // Or "Join Meeting" depending on next step
                 }
-            } catch (error) {
-                console.error('Error loading projects:', error);
-                document.getElementById('project-selector').innerHTML = '<option value="">Error loading projects</option>';
+            } else {
+                if (statusText) statusText.textContent = 'Teams Disconnected';
+                if (statusDot) statusDot.style.background = '#ef4444'; // Red
+                if (joinBtn) {
+                    joinBtn.onclick = () => {
+                        window.location.href = '/oauth/teams/login';
+                    };
+                    joinBtn.textContent = "Connect Teams";
+                }
             }
         }
 
-        function changeProject(projectKey) {
-            if (!projectKey) {
-                // Clear the dashboard if no project is selected
-                clearDashboard();
-                return;
-            }
+        // Main update function
+        async function updateDashboard(projectKey) {
+            if (isLoading) return;
             
-            currentProjectKey = projectKey;
-            loadDashboard();
-        }
+            currentProject = projectKey;
+            document.getElementById('project-display-name').textContent = `Project: ${availableProjects.find(p => p.key === currentProject)?.name || currentProject}`;
 
-        function clearDashboard() {
-            document.getElementById('total-issues').textContent = '-';
-            document.getElementById('todo-issues').textContent = '-';
-            document.getElementById('progress-issues').textContent = '-';
-            document.getElementById('done-issues').textContent = '-';
-            document.getElementById('progress-fill').style.width = '0%';
-            document.getElementById('progress-text').textContent = '0% Complete';
-            document.getElementById('recent-issues').innerHTML = '<div class="loading">Select a project to view data</div>';
-        }
-
-        async function loadDashboard() {
-            if (!currentProjectKey) return;
-
+            showLoading();
+            
             try {
-                const response = await fetch(`${API_BASE}/dashboard/${currentProjectKey}`);
-                const data = await response.json();
-                
-                if (response.ok) {
-                    // Update statistics
-                    document.getElementById('total-issues').textContent = data.status_counts.total || 0;
-                    document.getElementById('todo-issues').textContent = data.status_counts.todo || 0;
-                    document.getElementById('progress-issues').textContent = data.status_counts.in_progress || 0;
-                    document.getElementById('done-issues').textContent = data.status_counts.done || 0;
-                    
-                    // Update progress bar
-                    const progressPercent = data.progress_percentage || 0;
-                    document.getElementById('progress-fill').style.width = progressPercent + '%';
-                    document.getElementById('progress-text').textContent = progressPercent + '% Complete';
-                    
-                    // Update recent issues
-                    const recentContainer = document.getElementById('recent-issues');
-                    if (data.recent_issues && data.recent_issues.length > 0) {
-                        recentContainer.innerHTML = data.recent_issues.map(issue => createIssueCard(issue, true)).join('');
-                    } else {
-                        recentContainer.innerHTML = '<div class="loading">No recent issues found</div>';
-                    }
-                } else {
-                    throw new Error(data.error || 'Failed to load dashboard data');
-                }
+                const [stats, health, actionItems, risks, progress, team, budget, deliverables, teamsAuthStatus] = await Promise.all([
+                    fetchProjectStats(),
+                    fetchProjectHealth(),
+                    fetchActionItems(),
+                    fetchRisks(),
+                    fetchProjectProgress(),
+                    fetchProjectTeam(),
+                    fetchProjectBudget(),
+                    fetchProjectDeliverables(),
+                    fetchTeamsAuthStatus()
+                ]);
+
+                updateStats(stats);
+                updateHealthMetrics(health);
+                updateActionItems(actionItems);
+                updateRisks(risks);
+                updateProgress(progress);
+                updateTeam(team);
+                updateBudget(budget);
+                updateDeliverables(deliverables);
+                updateTeamsAuthStatus(teamsAuthStatus);
             } catch (error) {
-                console.error('Error loading dashboard:', error);
-                document.getElementById('recent-issues').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                showError('Error updating dashboard: ' + error.message);
+            } finally {
+                hideLoading();
             }
         }
 
-        async function loadAllIssues() {
-            if (!currentProjectKey) return;
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            availableProjects = await fetchProjects();
+            const projectSelect = document.getElementById('project-select');
 
-            try {
-                const response = await fetch(`${API_BASE}/issues/${currentProjectKey}`);
-                const data = await response.json();
-                
-                const container = document.getElementById('all-issues');
-                
-                if (response.ok && data.issues) {
-                    if (data.issues.length > 0) {
-                        container.innerHTML = data.issues.map(issue => createIssueCard(issue)).join('');
-                    } else {
-                        container.innerHTML = '<div class="loading">No issues found in this project</div>';
-                    }
-                    container.dataset.loaded = 'true';
-                } else {
-                    throw new Error(data.error || 'Failed to load issues');
-                }
-            } catch (error) {
-                console.error('Error loading issues:', error);
-                document.getElementById('all-issues').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            if (availableProjects.length > 0) {
+                availableProjects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.key;
+                    option.textContent = project.name;
+                    projectSelect.appendChild(option);
+                });
+                // Set initial project to the first one or a default
+                currentProject = availableProjects[0].key;
+                projectSelect.value = currentProject;
+                updateDashboard(currentProject);
+            } else {
+                showError('No Jira projects found. Please ensure your Jira integration is set up correctly.');
             }
-        }
 
-        async function loadUsers() {
-            if (!currentProjectKey) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/users`);
-                const data = await response.json();
-                
-                const container = document.getElementById('team-members');
-                
-                if (response.ok && Array.isArray(data)) {
-                    if (data.length > 0) {
-                        container.innerHTML = data.map(user => `
-                            <div class="issue-card">
-                                <div class="issue-summary">${user.displayName}</div>
-                                <div class="issue-meta">
-                                    <div>📧 ${user.emailAddress || 'No email'}</div>
-                                    <div>⚡ ${user.active ? 'Active' : 'Inactive'}</div>
-                                </div>
-                            </div>
-                        `).join('');
-                    } else {
-                        container.innerHTML = '<div class="loading">No team members found</div>';
-                    }
-                    container.dataset.loaded = 'true';
-                } else {
-                    throw new Error(data.error || 'Failed to load users');
-                }
-            } catch (error) {
-                console.error('Error loading users:', error);
-                document.getElementById('team-members').innerHTML = `<div class="error">Error: ${error.message}</div>`;
-            }
-        }
-
-        // Load projects on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadProjects();
+            projectSelect.addEventListener('change', (event) => {
+                updateDashboard(event.target.value);
+            });
+            
+            // Refresh data every 5 minutes
+            setInterval(() => updateDashboard(currentProject), 5 * 60 * 1000);
         });
     </script>
 </body>

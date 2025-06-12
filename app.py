@@ -33,10 +33,21 @@ OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET', 'ATOAJGryktFzcCjG9V9
 OAUTH_REDIRECT_URI = os.environ.get('OAUTH_REDIRECT_URI', 'http://localhost:8000/oauth/callback')
 OAUTH_SCOPE = 'read:jira-user read:jira-work'
 
+# Microsoft Teams OAuth 2.0 Configuration
+TEAMS_CLIENT_ID = os.environ.get('TEAMS_CLIENT_ID') # You need to set this in your .env
+TEAMS_CLIENT_SECRET = os.environ.get('TEAMS_CLIENT_SECRET') # You need to set this in your .env
+TEAMS_REDIRECT_URI = os.environ.get('TEAMS_REDIRECT_URI', 'http://localhost:8000/oauth/teams/callback')
+TEAMS_SCOPES = ['User.Read', 'Calendars.ReadWrite', 'OnlineMeetings.ReadWrite'] # Basic scopes
+
 # Jira OAuth 2.0 URLs
 JIRA_AUTH_URL = 'https://auth.atlassian.com/authorize'
 JIRA_TOKEN_URL = 'https://auth.atlassian.com/oauth/token'
 JIRA_API_BASE = f'https://api.atlassian.com/ex/jira/{JIRA_DOMAIN.split(".")[0]}'
+
+# Microsoft Teams OAuth 2.0 URLs
+TEAMS_AUTH_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+TEAMS_TOKEN_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
+TEAMS_GRAPH_API_BASE = 'https://graph.microsoft.com/v1.0'
 
 def get_jira_auth():
     """Get authentication for Jira API calls"""
@@ -215,13 +226,132 @@ def oauth_logout():
     session.clear()
     return jsonify({"message": "Logged out successfully"})
 
+# Microsoft Teams OAuth 2.0 Routes
+@app.route('/oauth/teams/login')
+def teams_oauth_login():
+    """Initiate Microsoft Teams OAuth 2.0 flow"""
+    if not TEAMS_CLIENT_ID or not TEAMS_CLIENT_SECRET:
+        return jsonify({"error": "Microsoft Teams OAuth not configured"}), 500
+    
+    state = str(uuid.uuid4())
+    session['teams_oauth_state'] = state
+    
+    params = {
+        'client_id': TEAMS_CLIENT_ID,
+        'response_type': 'code',
+        'redirect_uri': TEAMS_REDIRECT_URI,
+        'scope': ' '.join(TEAMS_SCOPES),
+        'state': state,
+        'response_mode': 'query'
+    }
+    
+    auth_url = f"{TEAMS_AUTH_URL}?{urlencode(params)}"
+    return redirect(auth_url)
+
+@app.route('/oauth/teams/callback')
+def teams_oauth_callback():
+    """Handle Microsoft Teams OAuth 2.0 callback"""
+    code = request.args.get('code')
+    state = request.args.get('state')
+    error = request.args.get('error')
+    
+    if error:
+        logger.error(f"Teams OAuth error: {error}")
+        return jsonify({"error": f"Teams OAuth error: {error}"}), 400
+    
+    if not code or state != session.get('teams_oauth_state'):
+        logger.error("Invalid Teams OAuth callback state or code.")
+        return jsonify({"error": "Invalid Teams OAuth callback"}), 400
+    
+    try:
+        token_data = {
+            'client_id': TEAMS_CLIENT_ID,
+            'scope': ' '.join(TEAMS_SCOPES),
+            'code': code,
+            'redirect_uri': TEAMS_REDIRECT_URI,
+            'grant_type': 'authorization_code',
+            'client_secret': TEAMS_CLIENT_SECRET
+        }
+        
+        response = requests.post(TEAMS_TOKEN_URL, data=token_data)
+        response.raise_for_status() # Raise an exception for HTTP errors
+        
+        token_info = response.json()
+        session['teams_access_token'] = token_info['access_token']
+        session['teams_refresh_token'] = token_info.get('refresh_token')
+        session['teams_expires_at'] = datetime.now() + timedelta(seconds=token_info.get('expires_in', 3600))
+        
+        return redirect('/') # Redirect back to the dashboard
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Teams token exchange failed: {e}\nResponse: {e.response.text if e.response else 'No response'}")
+        return jsonify({"error": "Failed to exchange code for Teams token"}), 500
+    except Exception as e:
+        logger.error(f"Teams OAuth callback general error: {str(e)}")
+        return jsonify({"error": f"Teams OAuth callback failed: {str(e)}"}), 500
+
+def refresh_teams_access_token():
+    """Refresh Microsoft Teams OAuth access token"""
+    if 'teams_refresh_token' not in session:
+        return False
+
+    try:
+        token_data = {
+            'client_id': TEAMS_CLIENT_ID,
+            'scope': ' '.join(TEAMS_SCOPES),
+            'refresh_token': session['teams_refresh_token'],
+            'grant_type': 'refresh_token',
+            'client_secret': TEAMS_CLIENT_SECRET
+        }
+
+        response = requests.post(TEAMS_TOKEN_URL, data=token_data)
+        response.raise_for_status()
+
+        token_info = response.json()
+        session['teams_access_token'] = token_info['access_token']
+        session['teams_expires_at'] = datetime.now() + timedelta(seconds=token_info.get('expires_in', 3600))
+        session['teams_refresh_token'] = token_info.get('refresh_token', session['teams_refresh_token']) # Refresh token might change
+        return True
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Teams token refresh failed: {e}\nResponse: {e.response.text if e.response else 'No response'}")
+        session.pop('teams_access_token', None)
+        session.pop('teams_refresh_token', None)
+        session.pop('teams_expires_at', None)
+        return False
+    except Exception as e:
+        logger.error(f"Teams token refresh general error: {str(e)}")
+        return False
+
+@app.route('/api/teams/auth-status')
+def teams_auth_status():
+    """Check Microsoft Teams authentication status"""
+    authenticated = 'teams_access_token' in session and \
+                    session.get('teams_expires_at') and \
+                    session['teams_expires_at'] > datetime.now()
+
+    if authenticated:
+        return jsonify({
+            'authenticated': True,
+            'expires_at': session['teams_expires_at'].isoformat()
+        })
+    else:
+        # Try to refresh token if an old one exists
+        if 'teams_refresh_token' in session:
+            if refresh_teams_access_token():
+                return jsonify({
+                    'authenticated': True,
+                    'expires_at': session['teams_expires_at'].isoformat()
+                })
+        return jsonify({'authenticated': False})
+
 # Main Routes
 @app.route('/')
 def index():
     auth_status = {
         'oauth_available': bool(OAUTH_CLIENT_ID),
         'oauth_authenticated': 'access_token' in session,
-        'basic_auth_available': bool(JIRA_API_TOKEN)
+        'basic_auth_available': bool(JIRA_API_TOKEN),
+        'teams_oauth_available': bool(TEAMS_CLIENT_ID and TEAMS_CLIENT_SECRET), # Indicate Teams OAuth availability
     }
     return render_template('index.html', auth_status=auth_status)
 
@@ -232,7 +362,11 @@ def auth_status():
         'oauth_available': bool(OAUTH_CLIENT_ID),
         'oauth_authenticated': 'access_token' in session,
         'basic_auth_available': bool(JIRA_API_TOKEN),
-        'expires_at': session.get('expires_at').isoformat() if session.get('expires_at') else None
+        'expires_at': session.get('expires_at').isoformat() if session.get('expires_at') else None,
+        'teams_oauth_available': bool(TEAMS_CLIENT_ID and TEAMS_CLIENT_SECRET),
+        'teams_oauth_authenticated': 'teams_access_token' in session and \
+                                     session.get('teams_expires_at') and \
+                                     session['teams_expires_at'] > datetime.now() # Include Teams status
     })
 
 @app.route('/api/data')
@@ -501,6 +635,329 @@ def get_jira_find_projects():
     except Exception as e:
         logger.error(f"Error fetching projects from find-projects: {str(e)}")
         return jsonify({"error": f"Exception occurred: {str(e)}"}), 500
+
+@app.route('/api/project/stats')
+def get_project_stats():
+    """Get project statistics including total issues, to-do, in progress, and completed"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')  # Default to UNCIA if not specified
+        
+        # Get all issues for the project
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" ORDER BY created DESC',
+            'maxResults': 1000,
+            'fields': 'status'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        # Count issues by status
+        stats = {
+            'totalIssues': len(issues),
+            'toDo': 0,
+            'inProgress': 0,
+            'completed': 0
+        }
+        
+        for issue in issues:
+            status = issue['fields']['status']['name'].lower()
+            if 'done' in status or 'complete' in status:
+                stats['completed'] += 1
+            elif 'in progress' in status or 'progress' in status:
+                stats['inProgress'] += 1
+            else:
+                stats['toDo'] += 1
+        
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Error getting project stats: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/health')
+def get_project_health():
+    """Get project health metrics including overall health, schedule, budget, and quality"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')  # Default to UNCIA if not specified
+        
+        # Get all issues for the project
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" ORDER BY created DESC',
+            'maxResults': 1000,
+            'fields': 'status,priority,duedate,created'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        # Calculate health metrics
+        total_issues = len(issues)
+        if total_issues == 0:
+            return jsonify({
+                'overall': 0,
+                'schedule': 0,
+                'budget': 0,
+                'quality': 0,
+                'onSchedule': 0,
+                'budgetHealth': 0,
+                'activeRisks': 0,
+                'pendingApprovals': 0
+            })
+        
+        # Calculate schedule health based on due dates
+        today = datetime.now().replace(tzinfo=None)
+        on_schedule = sum(1 for issue in issues 
+                         if issue['fields'].get('duedate') 
+                         and datetime.strptime(issue['fields']['duedate'], '%Y-%m-%d').replace(tzinfo=None) >= today)
+        schedule_health = (on_schedule / total_issues) * 100
+        
+        # Calculate quality based on recent issues
+        thirty_days_ago = (today - timedelta(days=30)).replace(tzinfo=None)
+        recent_issues = [issue for issue in issues 
+                        if datetime.strptime(issue['fields']['created'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(tzinfo=None) > 
+                        thirty_days_ago]
+        quality_score = 100 if not recent_issues else min(100, max(0, 
+            sum(1 for issue in recent_issues 
+                if issue['fields']['status']['name'].lower() in ['done', 'complete']) / len(recent_issues) * 100))
+        
+        # Calculate overall health (weighted average)
+        health = {
+            'overall': int((schedule_health * 0.4 + quality_score * 0.4 + 92 * 0.2)),  # Weighted average
+            'schedule': min(100, max(0, schedule_health)),
+            'budget': 92,  # This could be calculated based on budget tracking
+            'quality': quality_score,
+            'onSchedule': min(100, max(0, schedule_health)),
+            'budgetHealth': 92,
+            'activeRisks': sum(1 for issue in issues 
+                              if issue['fields']['priority']['name'].lower() == 'highest'),
+            'pendingApprovals': sum(1 for issue in issues 
+                                  if issue['fields']['status']['name'].lower() == 'waiting for approval')
+        }
+        
+        return jsonify(health)
+    except Exception as e:
+        logger.error(f"Error getting project health: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/action-items')
+def get_action_items():
+    """Get action items with their priorities and due dates"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')  # Default to UNCIA if not specified
+        
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND type = Task ORDER BY priority DESC, duedate ASC',
+            'maxResults': 10,
+            'fields': 'summary,priority,assignee,duedate,status'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        action_items = []
+        for issue in issues:
+            fields = issue['fields']
+            # Only include non-completed tasks
+            if fields['status']['name'].lower() not in ['done', 'complete']:
+                action_items.append({
+                    'title': fields['summary'],
+                    'priority': fields['priority']['name'],
+                    'assignee': fields['assignee']['displayName'] if fields.get('assignee') else 'Unassigned',
+                    'dueDate': fields.get('duedate', 'No due date')
+                })
+        
+        return jsonify(action_items)
+    except Exception as e:
+        logger.error(f"Error getting action items: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/risks')
+def get_risks():
+    """Get active risks using 'Bug' type or high-priority issues as risks"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')  # Default to UNCIA if not specified
+        
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        # Use 'Bug' type or highest priority as risks
+        params = {
+            'jql': f'project = "{project_key}" AND (type = Bug OR priority = Highest) ORDER BY priority DESC',
+            'maxResults': 5,
+            'fields': 'summary,priority,description,status'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        risks = []
+        for issue in issues:
+            fields = issue.get('fields', {})
+            status = fields.get('status', {}).get('name', '').lower()
+            priority = fields.get('priority', {}).get('name', 'Medium')
+            summary = fields.get('summary', 'No title')
+            description = fields.get('description', 'No mitigation strategy provided')
+            # Only include non-resolved risks
+            if status not in ['done', 'complete', 'resolved']:
+                risks.append({
+                    'title': summary,
+                    'priority': priority,
+                    'mitigation': description
+                })
+        
+        return jsonify(risks)
+    except Exception as e:
+        logger.error(f"Error getting risks: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# Add a new endpoint to get available projects
+@app.route('/api/projects')
+def get_projects():
+    """Get list of available Jira projects"""
+    try:
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/project"
+        response = make_jira_request(url)
+        projects = response.json()
+        
+        return jsonify([{
+            'key': project['key'],
+            'name': project['name'],
+            'type': project['projectTypeKey']
+        } for project in projects])
+    except Exception as e:
+        logger.error(f"Error getting projects: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/progress')
+def get_project_progress():
+    """Get project progress data including overall completion and recent activities"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')
+
+        # Fetch all issues for overall progress calculation
+        overall_progress_url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        overall_progress_params = {
+            'jql': f'project = "{project_key}" ORDER BY created DESC',
+            'maxResults': 1000,
+            'fields': 'status'
+        }
+        overall_progress_response = make_jira_request(overall_progress_url, overall_progress_params)
+        all_issues = overall_progress_response.json().get('issues', [])
+
+        total_issues = len(all_issues)
+        completed_issues = sum(1 for issue in all_issues 
+                               if issue['fields']['status']['name'].lower() in ['done', 'complete'])
+        overall_completion = (completed_issues / total_issues * 100) if total_issues > 0 else 0
+
+        # Fetch recent activities (e.g., recently updated issues)
+        recent_activities_url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        recent_activities_params = {
+            'jql': f'project = "{project_key}" ORDER BY updated DESC',
+            'maxResults': 5, # Limit to 5 recent activities
+            'fields': 'summary,status,updated,creator'
+        }
+        recent_activities_response = make_jira_request(recent_activities_url, recent_activities_params)
+        recent_issues = recent_activities_response.json().get('issues', [])
+
+        activities = []
+        for issue in recent_issues:
+            fields = issue.get('fields', {})
+            activities.append({
+                'title': fields.get('summary', 'No summary'),
+                'status': fields.get('status', {}).get('name', 'Unknown'),
+                'updated': fields.get('updated', datetime.now().isoformat()),
+                'creator': fields.get('creator', {}).get('displayName', 'Unknown')
+            })
+
+        return jsonify({
+            'overall_completion': round(overall_completion, 2),
+            'recent_activities': activities
+        })
+    except Exception as e:
+        logger.error(f"Error getting project progress: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/team')
+def get_project_team():
+    """Get project team members (assignees) for the specified project"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')
+        
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND assignee IS NOT EMPTY',
+            'maxResults': 1000, # Fetch a reasonable number of issues to find assignees
+            'fields': 'assignee'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        team_members = {}
+        for issue in issues:
+            assignee = issue['fields'].get('assignee')
+            if assignee:
+                account_id = assignee.get('accountId')
+                if account_id not in team_members:
+                    team_members[account_id] = {
+                        'accountId': account_id,
+                        'displayName': assignee.get('displayName', 'Unknown'),
+                        'emailAddress': assignee.get('emailAddress', 'N/A'),
+                        'avatarUrl': assignee.get('avatarUrls', {}).get('48x48', '')
+                    }
+        
+        return jsonify(list(team_members.values()))
+    except Exception as e:
+        logger.error(f"Error getting project team: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/budget')
+def get_project_budget():
+    """Get dummy project budget data"""
+    try:
+        # In a real application, this data would come from a financial system or custom Jira fields
+        budget_data = {
+            'totalBudget': 150000,
+            'spentBudget': 75000,
+            'remainingBudget': 75000,
+            'burnRate': 50.0
+        }
+        return jsonify(budget_data)
+    except Exception as e:
+        logger.error(f"Error getting project budget: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/project/deliverables')
+def get_project_deliverables():
+    """Get project deliverables (completed stories or tasks) for the specified project"""
+    try:
+        project_key = request.args.get('project', 'UNCIA')
+        
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND (type = Story OR type = Task) AND status in ("Done", "Completed") ORDER BY resolutiondate DESC',
+            'maxResults': 10,
+            'fields': 'summary,status,resolutiondate,creator'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        deliverables = []
+        for issue in issues:
+            fields = issue.get('fields', {})
+            deliverables.append({
+                'title': fields.get('summary', 'No summary'),
+                'status': fields.get('status', {}).get('name', 'Unknown'),
+                'resolutionDate': fields.get('resolutiondate', 'N/A'),
+                'creator': fields.get('creator', {}).get('displayName', 'Unknown')
+            })
+        
+        return jsonify(deliverables)
+    except Exception as e:
+        logger.error(f"Error getting project deliverables: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     # Check if required environment variables are set
