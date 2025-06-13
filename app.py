@@ -23,13 +23,14 @@ app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')  # 
 CORS(app, supports_credentials=True)
 
 # JIRA Configuration - Use environment variables for security
-JIRA_DOMAIN = os.environ.get('JIRA_DOMAIN', 'uncia-team-vmevzjmu.atlassian.net')
+JIRA_DOMAIN = os.environ.get('JIRA_DOMAIN', 'https://uncia-team-vmevzjmu.atlassian.net').rstrip('/')
+
 JIRA_EMAIL = os.environ.get('JIRA_EMAIL', 'heerha@uncia.ai')
 JIRA_API_TOKEN = os.environ.get('JIRA_API_TOKEN', 'ATATT3xFfGF02Z2VPkoTxN-FQRjgHnO5aQRdEiOhioTwikHHIUNDqrMjL9n7AInkzJpHYO360PD6CY6bVsa-Y3ZwjrqrEo0rVbSpAp4DCQu3lMiBzbNvVl12X47stmCbOb_7ueiJt93fNQphmp3hgJJWf9em98ETlJufB0qcndcOFQWL9Ups6CU=0AD8157C')
 
 # OAuth 2.0 Configuration for Jira Cloud
-OAUTH_CLIENT_ID = os.environ.get('OAUTH_CLIENT_ID', 'wKPQ6BvxnTQHae7gzEcVdfeXSmhpJmUd')
-OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET', 'ATOAJGryktFzcCjG9V9py2v4wHAhT8xAPiZx5nGFfPu0ICd5XqgeBC1_wwrHV5WfjKtyD102020C')
+OAUTH_CLIENT_ID = os.environ.get('OAUTH_CLIENT_ID')
+OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET')
 OAUTH_REDIRECT_URI = os.environ.get('OAUTH_REDIRECT_URI', 'http://localhost:8000/oauth/callback')
 OAUTH_SCOPE = 'read:jira-user read:jira-work'
 
@@ -64,7 +65,7 @@ def get_jira_headers():
         "Accept": "application/json",
         "Content-Type": "application/json"
     }
-    
+
     # Add OAuth token if available
     if 'access_token' in session:
         headers['Authorization'] = f'Bearer {session["access_token"]}'
@@ -72,41 +73,58 @@ def get_jira_headers():
     return headers
 
 def make_jira_request(url, params=None, use_oauth=False):
-    """Make authenticated request to Jira API with proper error handling"""
+    """Enhanced Jira request function with better error handling"""
     try:
-        headers = get_jira_headers()
+        # Clean up URL
+        if url.startswith('https://https://'):
+            url = url.replace('https://https://', 'https://')
+        
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        
+        logger.info(f"🌐 Making request to: {url}")
+        logger.info(f"📊 Headers: {headers}")
+        logger.info(f"📊 Params: {params}")
         
         if use_oauth and 'access_token' in session:
-            # Use OAuth endpoint
-            if url.startswith(f"https://{JIRA_DOMAIN}"):
-                url = url.replace(f"https://{JIRA_DOMAIN}", JIRA_API_BASE)
-            response = requests.get(url, headers=headers, params=params)
+            headers['Authorization'] = f'Bearer {session["access_token"]}'
+            response = requests.get(url, headers=headers, params=params, timeout=30)
         else:
-            # Use basic auth with personal access token
-            auth = HTTPBasicAuth(JIRA_EMAIL, JIRA_API_TOKEN) if JIRA_API_TOKEN else None
-            if not auth:
-                raise Exception("No authentication method available")
-            response = requests.get(url, headers=headers, auth=auth, params=params)
+            if not JIRA_API_TOKEN or not JIRA_EMAIL:
+                raise Exception("JIRA credentials not configured")
+                
+            auth = HTTPBasicAuth(JIRA_EMAIL, JIRA_API_TOKEN)
+            response = requests.get(url, headers=headers, auth=auth, params=params, timeout=30)
         
-        logger.info(f"Request to {url} returned status {response.status_code}")
+        logger.info(f"📈 Response status: {response.status_code}")
+        logger.info(f"📈 Response size: {len(response.content)} bytes")
         
         if response.status_code == 401:
-            if 'access_token' in session:
-                # Token might be expired, try to refresh
-                if refresh_access_token():
-                    return make_jira_request(url, params, use_oauth)
-            raise Exception("Authentication failed")
+            logger.error("❌ Authentication failed")
+            raise Exception("Authentication failed - check your email and API token")
         elif response.status_code == 403:
-            raise Exception("Access forbidden - check permissions")
+            logger.error("❌ Access forbidden")
+            raise Exception("Access forbidden - check your permissions")
         elif response.status_code == 404:
-            raise Exception("Resource not found")
+            logger.error("❌ Resource not found")
+            raise Exception(f"Resource not found: {url}")
         elif response.status_code >= 400:
-            raise Exception(f"API request failed with status {response.status_code}: {response.text}")
+            logger.error(f"❌ API error {response.status_code}: {response.text}")
+            raise Exception(f"API request failed with status {response.status_code}: {response.text[:200]}")
         
         return response
+        
+    except requests.exceptions.Timeout:
+        logger.error("❌ Request timeout")
+        raise Exception("Request timeout - Jira server is taking too long to respond")
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"❌ Connection error: {str(e)}")
+        raise Exception(f"Cannot connect to Jira server: {str(e)}")
     except requests.exceptions.RequestException as e:
-        logger.error(f"Request failed: {str(e)}")
-        raise Exception(f"Network error: {str(e)}")
+        logger.error(f"❌ Request error: {str(e)}")
+        raise Exception(f"Request failed: {str(e)}")
 
 # OAuth 2.0 Routes
 @app.route('/oauth/login')
@@ -373,30 +391,212 @@ def auth_status():
 def get_data():
     return jsonify({'message': 'Hello from Flask API'})
 
+@app.route('/api/project/deliverables')
+def get_project_deliverables():
+    """Get project deliverables"""
+    try:
+        project_key = request.args.get('project', 'UNCIA') # Default to UNCIA if not specified
+        
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND type in ("Story", "Task", "Bug") ORDER BY duedate ASC',
+            'maxResults': 10,
+            'fields': 'summary,status,creator,resolutiondate'
+        }
+        
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+        
+        deliverables = []
+        for issue in issues:
+            fields = issue['fields']
+            deliverables.append({
+                'title': fields['summary'],
+                'status': fields['status']['name'],
+                'creator': fields['creator']['displayName'] if fields.get('creator') else 'Unknown',
+                'resolutionDate': fields.get('resolutiondate', 'No resolution date')
+            })
+        
+        return jsonify(deliverables)
+    except Exception as e:
+        logger.error(f"Error getting project deliverables: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/jira/kanban-board-data')
+def get_jira_kanban_data():
+    """Get project Kanban board data based on issue statuses"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey is required"}), 400
+
+        # Fetch all issues for the project, ordering by status category and creation date
+        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" ORDER BY statusCategory, created ASC',
+            'maxResults': 1000, # Adjust as needed
+            'fields': 'summary,status,key,created' # Fetch fields needed for Kanban
+        }
+        response = make_jira_request(url, params)
+        issues = response.json().get('issues', [])
+
+        kanban_columns = {
+            "TO DO": [],
+            "DAY 0 INITIATION": [],
+            "READINESS FOR DAY 1": [],
+            "SOLUTION DESIGN": [],
+            "IN PROGRESS": [],
+            "DATA MIGRATION": [],
+            "REPORTS": [],
+            "GO LIVE INITIATION": [],
+            "TAKE OVER FORM": [],
+            # Add any other specific statuses/columns from your Jira board
+        }
+
+        # Define status mappings for frontend display
+        done_statuses = ['done', 'closed', 'resolved']
+        in_progress_statuses = ['in progress', 'progress', 'selected for development']
+        not_started_statuses = ['to do', 'backlog', 'open']
+
+        for issue in issues:
+            fields = issue['fields']
+            status_name_raw = fields['status']['name']
+            status_name_lower = status_name_raw.lower()
+
+            display_status = "Not Started"
+            if status_name_lower in done_statuses:
+                display_status = "Done"
+            elif status_name_lower in in_progress_statuses:
+                display_status = "In Progress"
+            elif status_name_lower in not_started_statuses:
+                display_status = "Not Started"
+            else:
+                # If status doesn't match predefined categories, use the raw status name
+                display_status = status_name_raw
+
+
+            issue_data = {
+                "title": fields['summary'],
+                "key": issue['key'],
+                "status": display_status,
+                "jiraStatus": status_name_raw, # Keep original Jira status for backend grouping
+                "startDate": fields.get('created', 'N/A') # Using 'created' as start date
+            }
+            
+            # Map issues to columns based on their exact Jira status name
+            # If the Jira status name matches a defined column, add it there.
+            # Otherwise, you might want a default column or handle it as an uncategorized item.
+            if status_name_raw.upper() in kanban_columns:
+                kanban_columns[status_name_raw.upper()].append(issue_data)
+            else:
+                # Optional: Add to a default 'Other' column if status not explicitly mapped
+                # Or log a warning if an issue status is not mapped
+                logger.warning(f"Issue {issue['key']} with status '{status_name_raw}' not mapped to a Kanban column.")
+                # Example: kanban_columns.setdefault("OTHER", []).append(issue_data)
+
+
+        return jsonify(kanban_columns)
+
+    except Exception as e:
+        logger.error(f"Error getting Kanban board data: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/jira/test')
 def test_jira_connection():
-    """Test Jira API connection"""
+    """Minimal Jira test endpoint for debugging"""
     try:
-        url = f"https://{JIRA_DOMAIN}/rest/api/3/myself"
-        response = make_jira_request(url)
+        logger.info("=== JIRA CONNECTION TEST ===")
+        logger.info(f"JIRA_DOMAIN: {JIRA_DOMAIN}")
+        logger.info(f"JIRA_EMAIL: {JIRA_EMAIL}")
+        logger.info(f"API Token exists: {bool(JIRA_API_TOKEN)}")
+        logger.info(f"API Token length: {len(JIRA_API_TOKEN) if JIRA_API_TOKEN else 0}")
+        
+        if not JIRA_API_TOKEN:
+            return jsonify({"error": "JIRA_API_TOKEN not set in environment"}), 500
+        
+        if not JIRA_EMAIL:
+            return jsonify({"error": "JIRA_EMAIL not set in environment"}), 500
+            
+        # Test the /myself endpoint
+        url = f"{JIRA_DOMAIN}/rest/api/3/myself"
+        headers = {"Content-Type": "application/json", "Accept": "application/json"}
+        auth = HTTPBasicAuth(JIRA_EMAIL, JIRA_API_TOKEN)
+        
+        logger.info(f"Making test request to: {url}")
+        response = requests.get(url, auth=auth, headers=headers, timeout=10)
+        
+        logger.info(f"Response status: {response.status_code}")
+        logger.info(f"Response content: {response.text[:500]}...")
         
         if response.status_code == 200:
             user_data = response.json()
             return jsonify({
                 "status": "success",
-                "message": "Connected to Jira successfully",
+                "message": "Jira connection successful",
                 "user": {
-                    "displayName": user_data.get('displayName'),
-                    "emailAddress": user_data.get('emailAddress'),
-                    "accountType": user_data.get('accountType')
-                }
+                    "displayName": user_data.get("displayName"),
+                    "emailAddress": user_data.get("emailAddress"),
+                    "accountType": user_data.get("accountType")
+                },
+                "url_tested": url
             })
+        elif response.status_code == 401:
+            return jsonify({
+                "error": "Authentication failed - Check your email and API token",
+                "status_code": 401,
+                "url_tested": url
+            }), 401
+        elif response.status_code == 403:
+            return jsonify({
+                "error": "Access forbidden - Check your permissions",
+                "status_code": 403,
+                "url_tested": url
+            }), 403
         else:
-            return jsonify({"error": f"Connection test failed: {response.text}"}), response.status_code
+            return jsonify({
+                "error": f"Jira API returned status {response.status_code}",
+                "details": response.text,
+                "url_tested": url
+            }), response.status_code
             
+    except requests.exceptions.Timeout:
+        logger.error("Request timeout")
+        return jsonify({"error": "Request timeout - Jira server not responding"}), 500
+    except requests.exceptions.ConnectionError as e:
+        logger.error(f"Connection error: {str(e)}")
+        return jsonify({"error": f"Connection error - Cannot reach Jira server: {str(e)}"}), 500
     except Exception as e:
-        logger.error(f"Connection test failed: {str(e)}")
-        return jsonify({"error": f"Connection test failed: {str(e)}"}), 500
+        logger.error(f"Unexpected error: {str(e)}")
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+def validate_jira_config():
+    """Validate Jira configuration on startup"""
+    issues = []
+    
+    if not JIRA_DOMAIN:
+        issues.append("JIRA_DOMAIN not set")
+    elif not JIRA_DOMAIN.startswith('https://'):
+        issues.append("JIRA_DOMAIN must start with https://")
+    
+    if not JIRA_EMAIL:
+        issues.append("JIRA_EMAIL not set")
+    elif '@' not in JIRA_EMAIL:
+        issues.append("JIRA_EMAIL appears invalid")
+    
+    if not JIRA_API_TOKEN:
+        issues.append("JIRA_API_TOKEN not set")
+    elif len(JIRA_API_TOKEN) < 20:
+        issues.append("JIRA_API_TOKEN appears too short")
+    
+    if issues:
+        logger.error("❌ Jira configuration issues:")
+        for issue in issues:
+            logger.error(f"  - {issue}")
+        logger.error("Please check your .env file and environment variables")
+    else:
+        logger.info("✅ Jira configuration looks good")
+    
+    return len(issues) == 0
 
 @app.route('/api/jira/project/<project_key>')
 def get_project_details(project_key):
@@ -557,7 +757,7 @@ def get_project_dashboard(project_key):
                 "fields": ["summary", "status", "assignee", "updated", "issuetype"]
             }
             recent_response = make_jira_request(search_url, recent_params)
-            
+
             recent_issues = []
             if recent_response.status_code == 200:
                 for issue in recent_response.json().get('issues', []):
@@ -570,8 +770,8 @@ def get_project_dashboard(project_key):
                         "updated": fields.get('updated'),
                         "issuetype": fields.get('issuetype', {}).get('name')
                     })
-            
-            dashboard_data["recent_issues"] = recent_issues
+
+                dashboard_data["recent_issues"] = recent_issues
         except Exception as e:
             logger.warning(f"Failed to fetch recent issues: {str(e)}")
             dashboard_data["recent_issues"] = []
@@ -605,36 +805,77 @@ def get_jira_projects():
 
 @app.route('/api/jira/find-projects')
 def get_jira_find_projects():
-    """Get all projects for the project selector"""
+    """Get all projects for the project selector with better error handling"""
     try:
-        url = f"https://{JIRA_DOMAIN}/rest/api/3/project/search"
-        response = make_jira_request(url)
+        logger.info("=== FETCHING PROJECTS ===")
         
-        if response.status_code == 200:
-            projects_data = response.json()
-            # Jira's /project/search returns a 'values' key for the actual projects
-            # We want to return a similar structure to the old find-projects endpoint
-            simplified_projects = []
-            for project in projects_data.get('values', []):
-                simplified_projects.append({
-                    "key": project.get('key'),
-                    "name": project.get('name'),
-                    "projectTypeKey": project.get('projectTypeKey'),
-                    "lead": project.get('lead', {}).get('displayName'),
-                    "id": project.get('id')
-                })
-            
-            return jsonify({
-                "total": len(simplified_projects),
-                "projects": simplified_projects,
-                "message": "Use the 'key' field from these results in your API calls"
-            })
-        else:
-            return jsonify({"error": "Failed to fetch Jira projects", "details": response.text}), response.status_code
+        # Try multiple endpoints to find projects
+        project_endpoints = [
+            f"{JIRA_DOMAIN}/rest/api/3/project",
+            f"{JIRA_DOMAIN}/rest/api/3/project/search"
+        ]
+        
+        for endpoint in project_endpoints:
+            try:
+                logger.info(f"Trying endpoint: {endpoint}")
+                response = make_jira_request(endpoint)
+                
+                if response.status_code == 200:
+                    projects_data = response.json()
+                    logger.info(f"✅ Success with {endpoint}")
+                    logger.info(f"Raw response type: {type(projects_data)}")
+                    
+                    # Handle different response formats
+                    if isinstance(projects_data, list):
+                        # Direct list of projects
+                        projects_list = projects_data
+                    elif isinstance(projects_data, dict) and 'values' in projects_data:
+                        # Paginated response
+                        projects_list = projects_data.get('values', [])
+                    elif isinstance(projects_data, dict) and 'projects' in projects_data:
+                        # Wrapped in projects key
+                        projects_list = projects_data.get('projects', [])
+                    else:
+                        logger.warning(f"Unexpected response format: {projects_data}")
+                        continue
+                    
+                    simplified_projects = []
+                    for project in projects_list:
+                        simplified_projects.append({
+                            "key": project.get('key'),
+                            "name": project.get('name'),
+                            "projectTypeKey": project.get('projectTypeKey'),
+                            "lead": project.get('lead', {}).get('displayName') if project.get('lead') else 'No lead',
+                            "id": project.get('id')
+                        })
+                    
+                    logger.info(f"✅ Found {len(simplified_projects)} projects")
+                    
+                    return jsonify({
+                        "total": len(simplified_projects),
+                        "projects": simplified_projects,
+                        "message": "Projects loaded successfully",
+                        "endpoint_used": endpoint
+                    })
+                    
+                else:
+                    logger.warning(f"Endpoint {endpoint} returned {response.status_code}")
+                    continue
+                    
+            except Exception as e:
+                logger.warning(f"Endpoint {endpoint} failed: {str(e)}")
+                continue
+        
+        # If all endpoints failed
+        return jsonify({
+            "error": "All project endpoints failed",
+            "details": "Could not fetch projects from any available endpoint",
+            "tried_endpoints": project_endpoints
+        }), 500
             
     except Exception as e:
-        logger.error(f"Error fetching projects from find-projects: {str(e)}")
-        return jsonify({"error": f"Exception occurred: {str(e)}"}), 500
+        logger.error(f"Critical error in find-projects: {str(e)}")
+        return jsonify({"error": f"Critical error: {str(e)}"}), 500
 
 @app.route('/api/project/stats')
 def get_project_stats():
@@ -928,41 +1169,453 @@ def get_project_budget():
         logger.error(f"Error getting project budget: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/project/deliverables')
-def get_project_deliverables():
-    """Get project deliverables (completed stories or tasks) for the specified project"""
+@app.route('/api/jira/project-stats')
+def get_jira_project_stats():
+    """Get project statistics - CORRECTED ENDPOINT"""
     try:
-        project_key = request.args.get('project', 'UNCIA')
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
         
-        url = f"https://{JIRA_DOMAIN}/rest/api/3/search"
+        logger.info(f"Getting project stats for: {project_key}")
+        
+        # Get all issues for the project to calculate stats
+        url = f"{JIRA_DOMAIN}/rest/api/3/search"
         params = {
-            'jql': f'project = "{project_key}" AND (type = Story OR type = Task) AND status in ("Done", "Completed") ORDER BY resolutiondate DESC',
+            'jql': f'project = "{project_key}"',
+            'maxResults': 1000,
+            'fields': 'status'
+        }
+        
+        response = make_jira_request(url, params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            total_issues = len(issues)
+            
+            # Count by status categories
+            todo_count = 0
+            in_progress_count = 0
+            done_count = 0
+            
+            for issue in issues:
+                status_category = issue.get('fields', {}).get('status', {}).get('statusCategory', {}).get('key', '')
+                if status_category == 'done':
+                    done_count += 1
+                elif status_category == 'indeterminate':
+                    in_progress_count += 1
+                else:
+                    todo_count += 1
+            
+            return jsonify({
+                "totalIssues": total_issues,
+                "toDo": todo_count,
+                "inProgress": in_progress_count,
+                "completed": done_count
+            })
+        else:
+            logger.error(f"Failed to get project stats: {response.status_code} - {response.text}")
+            return jsonify({"error": "Failed to fetch project statistics"}), response.status_code
+        
+    except Exception as e:
+        logger.error(f"Error getting project stats: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/jira/project-health')
+def get_jira_project_health():
+    """Get project health metrics - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting project health for: {project_key}")
+        
+        # For now, return static health data (you can enhance this later)
+        health_data = {
+            "overall": 85,
+            "schedule": 78,
+            "budget": 92,
+            "quality": 85,
+            "onSchedule": 85,
+            "budgetHealth": 92,
+            "activeRisks": 3,
+            "pendingApprovals": 2
+        }
+        
+        return jsonify(health_data)
+        
+    except Exception as e:
+        logger.error(f"Error getting project health: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/jira/action-items')
+def get_jira_action_items():
+    """Get action items - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting action items for: {project_key}")
+        
+        # Get open tasks and bugs as action items
+        url = f"{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND status != Done AND (type = Task OR type = Bug) ORDER BY priority DESC',
+            'maxResults': 10,
+            'fields': 'summary,priority,assignee,duedate,status'
+        }
+        
+        response = make_jira_request(url, params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            
+            action_items = []
+            for issue in issues:
+                fields = issue.get('fields', {})
+                priority = fields.get('priority', {}).get('name', 'Medium')
+                assignee = fields.get('assignee')
+                
+                action_items.append({
+                    "title": fields.get('summary', 'No title'),
+                    "priority": priority,
+                    "assignee": assignee.get('displayName') if assignee else 'Unassigned',
+                    "dueDate": fields.get('duedate', 'No due date')
+                })
+            
+            return jsonify(action_items)
+        else:
+            logger.error(f"Failed to get action items: {response.status_code}")
+            return jsonify([])  # Return empty array on error
+            
+    except Exception as e:
+        logger.error(f"Error getting action items: {str(e)}")
+        return jsonify([])  # Return empty array on error
+
+@app.route('/api/jira/risks')
+def get_jira_risks():
+    """Get project risks - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting risks for: {project_key}")
+        
+        # Get high priority issues and bugs as risks
+        url = f"{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND (priority = Highest OR priority = High) AND status != Done',
+            'maxResults': 5,
+            'fields': 'summary,priority,description'
+        }
+        
+        response = make_jira_request(url, params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            
+            risks = []
+            for issue in issues:
+                fields = issue.get('fields', {})
+                description = fields.get('description')
+                
+                # Extract text from description if it's in a complex format
+                mitigation = "Mitigation strategy being developed"
+                if description:
+                    if isinstance(description, str):
+                        mitigation = description[:100] + "..." if len(description) > 100 else description
+                    elif isinstance(description, dict) and 'content' in description:
+                        # Handle Atlassian Document Format
+                        mitigation = "See issue description for details"
+                
+                risks.append({
+                    "title": fields.get('summary', 'No title'),
+                    "priority": fields.get('priority', {}).get('name', 'High'),
+                    "mitigation": mitigation
+                })
+            
+            return jsonify(risks)
+        else:
+            logger.error(f"Failed to get risks: {response.status_code}")
+            return jsonify([])  # Return empty array on error
+            
+    except Exception as e:
+        logger.error(f"Error getting risks: {str(e)}")
+        return jsonify([])  # Return empty array on error
+
+@app.route('/api/jira/project-progress')
+def get_jira_project_progress():
+    """Get project progress - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting project progress for: {project_key}")
+        
+        # Get overall completion percentage
+        url = f"{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}"',
+            'maxResults': 1000,
+            'fields': 'status,updated,creator,summary'
+        }
+
+        response = make_jira_request(url, params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            total_issues = len(issues)
+            
+            completed_issues = 0
+            recent_activities = []
+            
+            for issue in issues:
+                fields = issue.get('fields', {})
+                status_category = fields.get('status', {}).get('statusCategory', {}).get('key', '')
+                
+                if status_category == 'done':
+                    completed_issues += 1
+                
+                # Add to recent activities (first 5)
+                if len(recent_activities) < 5:
+                    creator = fields.get('creator', {})
+                    recent_activities.append({
+                        "title": fields.get('summary', 'No title'),
+                        "status": fields.get('status', {}).get('name', 'Unknown'),
+                        "updated": fields.get('updated', ''),
+                        "creator": creator.get('displayName', 'Unknown') if creator else 'Unknown'
+                    })
+            
+            overall_completion = (completed_issues / total_issues * 100) if total_issues > 0 else 0
+            
+            return jsonify({
+                "overall_completion": round(overall_completion, 1),
+                "recent_activities": recent_activities
+            })
+        else:
+            logger.error(f"Failed to get project progress: {response.status_code}")
+            return jsonify({"overall_completion": 0, "recent_activities": []})
+            
+    except Exception as e:
+        logger.error(f"Error getting project progress: {str(e)}")
+        return jsonify({"overall_completion": 0, "recent_activities": []})
+
+@app.route('/api/jira/project-team')
+def get_jira_project_team():
+    """Get project team - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting project team for: {project_key}")
+        
+        # Get unique assignees from project issues
+        url = f"{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND assignee IS NOT EMPTY',
+            'maxResults': 100,
+            'fields': 'assignee'
+        }
+        
+        response = make_jira_request(url, params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            
+            team_members = {}
+            for issue in issues:
+                assignee = issue.get('fields', {}).get('assignee')
+                if assignee:
+                    account_id = assignee.get('accountId')
+                    if account_id not in team_members:
+                        team_members[account_id] = {
+                            "accountId": account_id,
+                            "displayName": assignee.get('displayName', 'Unknown'),
+                            "emailAddress": assignee.get('emailAddress', 'N/A'),
+                            "avatarUrl": assignee.get('avatarUrls', {}).get('48x48', '')
+                        }
+            
+            return jsonify(list(team_members.values()))
+        else:
+            logger.error(f"Failed to get project team: {response.status_code}")
+            return jsonify([])
+            
+    except Exception as e:
+        logger.error(f"Error getting project team: {str(e)}")
+        return jsonify([])
+
+@app.route('/api/jira/project-budget')
+def get_jira_project_budget():
+    """Get project budget - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting project budget for: {project_key}")
+        
+        # Return mock budget data (customize based on your needs)
+        budget_data = {
+            "totalBudget": 150000,
+            "spentBudget": 75000,
+            "remainingBudget": 75000,
+            "burnRate": 50.0
+        }
+        
+        return jsonify(budget_data)
+        
+    except Exception as e:
+        logger.error(f"Error getting project budget: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/jira/project-deliverables')
+def get_jira_project_deliverables():
+    """Get project deliverables - CORRECTED ENDPOINT"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        logger.info(f"Getting project deliverables for: {project_key}")
+        
+        # Get completed stories and epics as deliverables
+        url = f"{JIRA_DOMAIN}/rest/api/3/search"
+        params = {
+            'jql': f'project = "{project_key}" AND status = Done AND (type = Story OR type = Epic) ORDER BY resolutiondate DESC',
             'maxResults': 10,
             'fields': 'summary,status,resolutiondate,creator'
         }
         
         response = make_jira_request(url, params)
-        issues = response.json().get('issues', [])
         
-        deliverables = []
-        for issue in issues:
-            fields = issue.get('fields', {})
-            deliverables.append({
-                'title': fields.get('summary', 'No summary'),
-                'status': fields.get('status', {}).get('name', 'Unknown'),
-                'resolutionDate': fields.get('resolutiondate', 'N/A'),
-                'creator': fields.get('creator', {}).get('displayName', 'Unknown')
-            })
-        
-        return jsonify(deliverables)
+        if response.status_code == 200:
+            data = response.json()
+            issues = data.get('issues', [])
+            
+            deliverables = []
+            for issue in issues:
+                fields = issue.get('fields', {})
+                creator = fields.get('creator', {})
+                
+                deliverables.append({
+                    "title": fields.get('summary', 'No title'),
+                    "status": fields.get('status', {}).get('name', 'Unknown'),
+                    "resolutionDate": fields.get('resolutiondate', 'N/A'),
+                    "creator": creator.get('displayName', 'Unknown') if creator else 'Unknown'
+                })
+            
+            return jsonify(deliverables)
+        else:
+            logger.error(f"Failed to get deliverables: {response.status_code}")
+            return jsonify([])
+            
     except Exception as e:
-        logger.error(f"Error getting project deliverables: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error getting deliverables: {str(e)}")
+        return jsonify([])
+
+@app.route('/api/jira/validate-project')
+def validate_project():
+    """Validate if a project key exists"""
+    try:
+        project_key = request.args.get('projectKey')
+        if not project_key:
+            return jsonify({"error": "projectKey parameter is required"}), 400
+        
+        url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}"
+        response = make_jira_request(url)
+        
+        if response.status_code == 200:
+            project_data = response.json()
+            return jsonify({
+                "valid": True,
+                "project": {
+                    "key": project_data.get('key'),
+                    "name": project_data.get('name'),
+                    "projectTypeKey": project_data.get('projectTypeKey')
+                }
+            })
+        else:
+            return jsonify({"valid": False, "error": f"Project {project_key} not found"}), 404
+            
+    except Exception as e:
+        logger.error(f"Error validating project: {str(e)}")
+        return jsonify({"valid": False, "error": str(e)}), 500
+
+@app.route('/api/jira/new-timeline-data')
+def get_jira_new_timeline_data():
+    project_key = request.args.get('projectKey')
+    if not project_key:
+        return jsonify({"error": "Project key is required"}), 400
+
+    try:
+        # Fetch all issues for the given project
+        jql = f'project = \"{project_key}\"'
+        response = make_jira_request(f"{JIRA_DOMAIN}/rest/api/3/search", params={'jql': jql, 'maxResults': 1000})
+        issues = response.json().get('issues', [])
+
+        total_issues = len(issues)
+        completed_issues = 0
+
+        # Define your timeline columns and their corresponding Jira statuses
+        # You can customize these mappings based on your Jira workflow
+        timeline_columns = [
+            {"title": "Backlog", "jira_statuses": ["Backlog", "Selected for Development"]},
+            {"title": "To Do", "jira_statuses": ["To Do"]},
+            {"title": "In Progress", "jira_statuses": ["In Progress", "Development", "In Review", "Testing"]},
+            {"title": "Done", "jira_statuses": ["Done", "Closed", "Resolved"]}
+        ]
+
+        processed_columns = []
+        for col in timeline_columns:
+            col_issues = [issue for issue in issues if issue['fields']['status']['name'] in col['jira_statuses']]
+            col_completed_issues = [issue for issue in col_issues if issue['fields']['status']['name'] in ["Done", "Closed", "Resolved"]]
+            
+            progress_percentage = (len(col_completed_issues) / len(col_issues) * 100) if len(col_issues) > 0 else 0
+            
+            status = "not-started"
+            if len(col_issues) > 0 and len(col_completed_issues) == len(col_issues):
+                status = "completed"
+            elif len(col_completed_issues) > 0 or len(col_issues) > 0:
+                status = "in-progress"
+            
+            processed_columns.append({
+                "title": col["title"],
+                "progress": round(progress_percentage),
+                "status": status
+            })
+
+            if col["title"] == "Done": # Assuming 'Done' column represents overall completion
+                completed_issues = len(col_issues)
+
+        overall_progress = (completed_issues / total_issues * 100) if total_issues > 0 else 0
+
+        return jsonify({
+            "overallProgress": round(overall_progress),
+            "columns": processed_columns
+        })
+
+    except Exception as e:
+        logger.error(f"Error fetching new timeline data: {str(e)}")
+        return jsonify({"error": "Failed to fetch timeline data", "details": str(e)}), 500
 
 if __name__ == '__main__':
-    # Check if required environment variables are set
-    if not JIRA_API_TOKEN and not OAUTH_CLIENT_ID:
-        logger.warning("Neither JIRA_API_TOKEN nor OAuth credentials are configured!")
-        logger.info("Set JIRA_API_TOKEN for basic auth or OAUTH_CLIENT_ID/OAUTH_CLIENT_SECRET for OAuth")
+    logger.info("🚀 Starting UNCIA Dashboard...")
     
+    # Validate configuration
+    if validate_jira_config():
+        logger.info("✅ Configuration validated successfully")
+    else:
+        logger.warning("⚠️  Configuration issues detected - some features may not work")
+    
+    logger.info(f"🌐 Starting server on http://localhost:8000")
     app.run(debug=True, port=8000)

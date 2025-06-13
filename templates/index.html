@@ -160,7 +160,7 @@
         }
 
         .tab-button.active {
-            background: white;
+            background: #B197C5;
             color: #0f172a;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
@@ -392,7 +392,7 @@
         }
 
         .item-title {
-            color: white;
+            color: White;
             font-weight: 600;
             font-size: 0.9rem;
         }
@@ -480,9 +480,411 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Kanban Board Styles */
+        .kanban-board-container {
+            background: linear-gradient(135deg, #3a0050 0%, #6a008a 50%, #200030 100%);
+            border-radius: 2rem;
+            padding: 2.5rem 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            overflow-x: auto; /* Allow horizontal scrolling for columns */
+            white-space: nowrap; /* Prevent columns from wrapping */
+        }
+
+        .kanban-board-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .kanban-columns-container {
+            display: flex;
+            gap: 1.5rem;
+            padding-bottom: 1rem; /* Space for scrollbar */
+            align-items: flex-start; /* Align columns to the top */
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            min-width: 280px;
+            max-width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: fit-content; /* Adjust height to content */
+            max-height: 70vh; /* Max height for scrollable columns */
+            overflow-y: auto; /* Enable vertical scrolling for cards */
+            scrollbar-width: thin; /* Firefox scrollbar */
+            scrollbar-color: #8b5cf6 rgba(255, 255, 255, 0.1); /* Firefox scrollbar colors */
+        }
+
+        /* Custom scrollbar for Webkit browsers */
+        .kanban-column::-webkit-scrollbar {
+            width: 8px; /* For vertical scrollbar */
+            height: 8px; /* For horizontal scrollbar */
+        }
+
+        .kanban-column::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .kanban-column::-webkit-scrollbar-thumb {
+            background-color: #8b5cf6; /* Purple thumb */
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .column-header h3 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .column-header span {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .kanban-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            cursor: grab;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .kanban-card.card-done {
+            border-left: 5px solid #28a745; /* Green */
+        }
+
+        .kanban-card.card-in-progress {
+            border-left: 5px solid #007bff; /* Blue */
+        }
+
+        .kanban-card.card-not-started {
+            border-left: 5px solid #6c757d; /* Grey */
+        }
+
+        .kanban-card.card-other {
+            border-left: 5px solid #eab308; /* Yellow/Orange for unmapped */
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.5rem;
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.75rem;
+        }
+
+        .card-key {
+            font-weight: 600;
+        }
+
+        .card-date {
+            font-style: italic;
+        }
+
+        .card-status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .badge-completed {
+            background: rgba(40, 167, 69, 0.3); /* Green */
+            color: #28a745;
+        }
+
+        .badge-in-progress {
+            background: rgba(0, 123, 255, 0.3); /* Blue */
+            color: #007bff;
+        }
+
+        .badge-not-started {
+            background: rgba(108, 117, 125, 0.3); /* Grey */
+            color: #6c757d;
+        }
+
+        .badge-other {
+            background: rgba(234, 179, 8, 0.3); /* Yellow */
+            color: #eab308;
+        }
+
+        /* Responsive Adjustments for Kanban */
+        @media (max-width: 1200px) {
+            .kanban-column {
+                min-width: 260px;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kanban-board-container {
+                padding: 1.5rem;
+            }
+            .kanban-board-title {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem;
+            }
+            .kanban-column {
+                min-width: 250px;
+                max-width: 100%; /* Allow full width on smaller screens if only one column fits */
+            }
+            .column-header h3 {
+                font-size: 1rem;
+            }
+            .kanban-card {
+                padding: 0.8rem;
+            }
+            .card-title {
+                font-size: 0.95rem;
+            }
+            .card-meta {
+                font-size: 0.75rem;
+            }
+            .card-status-badge {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kanban-columns-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .kanban-column {
+                width: 95%; /* Almost full width for single column stack */
+                max-width: 350px; /* Limit max width even when stacked */
+            }
+        }
+
+        /* New Project Progress Timeline Section */
+        .project-progress-timeline-container {
+            margin-bottom: 2rem;
+        }
+
+        .timeline-header-new {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title-new {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .overall-progress-new {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .timeline-line-container {
+            position: relative;
+            height: 1.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .horizontal-line-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .horizontal-line-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #8b5cf6);
+            border-radius: 0.75rem;
+            transition: width 0.8s ease;
+        }
+
+        .horizontal-line-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+        }
+
+        .timeline-nodes-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            position: relative;
+            width: 100%;
+            padding: 0 25px; /* Adjust padding to make space for end nodes */
+            box-sizing: border-box;
+        }
+
+        .timeline-node {
+            width: 1rem;
+            height: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .timeline-node.completed {
+            background: #28a745;
+        }
+
+        .timeline-node.in-progress {
+            background: #007bff;
+        }
+
+        .timeline-node.not-started {
+            background: #6c757d;
+        }
+
+        .timeline-node.other {
+            background: #eab308;
+        }
+
+        /* New Timeline Node and Label Styles */
+        .timeline-node-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 150px; /* Adjust as needed */
+            text-align: center;
+        }
+
+        .timeline-node-circle {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .timeline-node-circle.completed {
+            background-color: #22c55e;
+            border-color: #16a34a;
+        }
+
+        .timeline-node-circle.in-progress {
+            background-color: #3b82f6;
+            border-color: #2563eb;
+        }
+
+        .timeline-node-circle.not-started {
+            background-color: #6b7280;
+            border-color: #4b5563;
+        }
+
+        .timeline-node-circle.pending {
+            background-color: #eab308;
+            border-color: #d97706;
+        }
+
+        .timeline-node-circle .inner-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background-color: white;
+            display: block;
+        }
+
+        .timeline-node-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .timeline-node-progress {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.75rem;
+        }
+
+        .timeline-node-line {
+            position: absolute;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.3);
+            top: 50%; /* Center with respect to the line container */
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 <body>
+    <div id="loading-indicator" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; color: white; font-size: 2rem;">Loading...</div>
+    <div id="error-message" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; padding: 1rem; text-align: center; z-index: 1001;"></div>
     <!-- Header Section -->
     <header class="header">
         <div class="header-container">
@@ -490,7 +892,7 @@
             <div class="top-nav">
                 <div class="logo-section">
                     <img src="{{ url_for('static', filename='images/Uncia2 1.jpg') }}" alt="UNCIA Logo" class="uncia-logo" />
-                </div>
+            </div>
 
                 <div class="nav-controls">
                     <div class="teams-badge">
@@ -503,7 +905,7 @@
                         </div>
                         <span id="teams-status-text" style="color: white; font-size: 0.9rem; font-weight: 500;">Teams Disconnected</span>
                         <div class="status-dot" id="teams-status-dot" style="background: #ef4444;"></div>
-                    </div>
+        </div>
 
                     <button class="join-btn" id="join-meeting-btn">
                         <svg style="width: 1rem; height: 1rem; fill: currentColor;" viewBox="0 0 24 24">
@@ -525,8 +927,8 @@
 
             <!-- Project Selector -->
             <div style="text-align: center; margin-bottom: 2rem;">
-                <label for="project-select" style="color: white; margin-right: 0.5rem;">Select Project:</label>
-                <select id="project-select" style="padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.15); color: white; font-size: 1rem;"></select>
+                <label for="project-select" style="color: White; margin-right: 0.5rem;">Select Project:</label>
+                <select id="project-select" style="padding: 0.5rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.3); background: #a78bfa; color: White; font-size: 1rem;"></select>
             </div>
 
             <!-- Tab Navigation -->
@@ -555,6 +957,28 @@
                     <h2 class="section-title">Executive Summary</h2>
                 </div>
 
+                <!-- New Project Progress Timeline Section -->
+                <div class="project-progress-timeline-container">
+                    <div class="timeline-header-new">
+                        <span class="timeline-title-new">Project Progress Timeline</span>
+                        <span class="overall-progress-new" id="overall-progress-timeline">0%</span>
+                    </div>
+
+                    <div class="timeline-line-container">
+                        <!-- Horizontal Line -->
+                        <div class="horizontal-line-bg"></div>
+                        <!-- Progress Line (animated) -->
+                        <div class="horizontal-line-fill" id="timeline-progress-fill-new">
+                            <div class="horizontal-line-glow"></div>
+                        </div>
+
+                        <!-- Timeline Nodes -->
+                        <div class="timeline-nodes-grid" id="timeline-nodes-grid">
+                            <!-- Nodes will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Grid -->
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -562,7 +986,7 @@
                             <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2 2H5V5h14v14z"/>
                             </svg>
-                        </div>
+                    </div>
                         <div class="stat-number">85</div>
                         <div class="stat-label">Total Issues</div>
                     </div>
@@ -572,7 +996,7 @@
                             <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                        </div>
+                    </div>
                         <div class="stat-number">23</div>
                         <div class="stat-label">To Do</div>
                     </div>
@@ -582,7 +1006,7 @@
                             <svg class="icon" style="color: white;" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
-                        </div>
+                    </div>
                         <div class="stat-number">18</div>
                         <div class="stat-label">In Progress</div>
                     </div>
@@ -605,9 +1029,9 @@
                         <div class="health-item">
                             <span class="health-label">Overall Health</span>
                             <div class="health-progress">
-                                <div class="progress-bar">
+                <div class="progress-bar">
                                     <div class="progress-fill progress-green" style="width: 85%;"></div>
-                                </div>
+                </div>
                                 <span class="health-value">85%</span>
                             </div>
                         </div>
@@ -658,8 +1082,8 @@
                                 <div class="metric-label">Pending Approvals</div>
                             </div>
                         </div>
-                    </div>
                 </div>
+            </div>
 
                 <!-- Action Items and Risks -->
                 <div class="action-risk-grid">
@@ -692,8 +1116,8 @@
                                 </div>
                                 <div class="item-meta">Mike Davis • Due: Jan 8, 2025</div>
                             </div>
-                        </div>
-                    </div>
+                </div>
+            </div>
 
                     <div class="content-section">
                         <div class="section-header">
@@ -701,13 +1125,13 @@
                                 <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                             </svg>
                             <h3 class="section-title">Active Risks</h3>
-                        </div>
+                </div>
                         <div class="item-list" id="risks-list">
                             <div class="list-item priority-high">
                                 <div class="item-header">
                                     <div class="item-title">Third-party API Integration Delays</div>
                                     <span class="badge badge-high">High</span>
-                                </div>
+            </div>
                                 <div class="item-meta">Identified backup API providers and parallel development approach</div>
                             </div>
                             <div class="list-item priority-medium">
@@ -719,6 +1143,14 @@
                             </div>
                         </div>
                     </div>
+        </div>
+    </div>
+
+            <!-- Kanban Board Section integrated into Overview -->
+            <div class="kanban-board-container">
+                <h2 class="kanban-board-title">Project Board</h2>
+                <div class="kanban-columns-container" id="kanban-columns-container">
+                    <!-- Kanban columns will be populated by JavaScript -->
                 </div>
             </div>
         </div>
@@ -808,195 +1240,278 @@
     </main>
 
     <script>
-        // Global state
-        let currentProject = null;
-        let isLoading = false;
+        let currentProject;
         let availableProjects = [];
+        let isLoading = false;
+        let sessionProjectKey; // Declare sessionProjectKey globally
 
-        // Utility functions
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        const projectSelect = document.getElementById('project-select');
+        const projectDisplayName = document.getElementById('project-display-name');
+
         function showLoading() {
             isLoading = true;
-            document.querySelectorAll('.stat-number, .metric-value, .health-value').forEach(el => {
-                el.innerHTML = '<div class="loading-spinner"></div>';
-            });
+            if (loadingIndicator) loadingIndicator.style.display = 'flex';
+            if (errorMessage) errorMessage.style.display = 'none';
         }
 
         function hideLoading() {
             isLoading = false;
-            document.querySelectorAll('.loading-spinner').forEach(el => {
-                el.parentElement.innerHTML = '0';
-            });
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
         }
 
-        function showError(message) {
-            console.error(message);
-            // You could add a toast notification here
+        function showError(message, isError = true) {
+            const errorElement = document.getElementById('error-message');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                errorElement.style.background = isError ? '#ef4444' : '#22c55e';
+                
+                // Auto-hide success messages after 3 seconds
+                if (!isError) {
+                    setTimeout(() => {
+                        errorElement.style.display = 'none';
+                    }, 3000);
+                }
+            }
+            hideLoading();
         }
 
-        // Tab navigation
-        function showTab(tabId) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
+        async function fetchData(url) {
+            try {
+                console.log(`📡 Fetching: ${url}`);
+                const response = await fetch(url);
+                
+                console.log(`📊 Response status: ${response.status} for ${url}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`❌ Error response for ${url}:`, errorText);
+                    
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        throw new Error(errorJson.error || `HTTP ${response.status}`);
+                    } catch (parseError) {
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+                }
+                
+                const data = await response.json();
+                console.log(`✅ Data received for ${url}:`, data);
+                return data;
+            } catch (error) {
+                console.error(`❌ Fetch error for ${url}:`, error);
+                showError(`Failed to load data from ${url.split('?')[0]}: ${error.message}`);
+                return null;
+            }
+        }
+
+        async function fetchAvailableProjects() {
+            console.log("🔍 Starting to fetch projects...");
             
-            // Remove active class from all buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            // Show selected tab
-            document.getElementById(tabId).classList.add('active');
-            
-            // Add active class to clicked button
-            event.target.classList.add('active');
-        }
-
-        // API calls
-        async function fetchProjectStats() {
             try {
-                const response = await fetch(`/api/project/stats?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch project stats');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching project stats: ' + error.message);
-                return null;
-            }
-        }
+                // First test if the server is running
+                const testResponse = await fetch('/api/auth-status');
+                console.log("✅ Server connection test:", testResponse.status);
+                
+                if (!testResponse.ok) {
+                    throw new Error(`Server not responding: ${testResponse.status}`);
+                }
+                
+                // Now try to fetch projects
+                console.log("📡 Fetching projects from /api/jira/find-projects");
+                const response = await fetch('/api/jira/find-projects');
+                
+                console.log("📊 Response status:", response.status);
+                console.log("📊 Response headers:", Object.fromEntries(response.headers.entries()));
+                
+                if (!response.ok) {
+                    // Get the error details
+                    const errorText = await response.text();
+                    console.error("❌ Error response body:", errorText);
+                    
+                    // Try to parse as JSON for better error info
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        console.error("❌ Parsed error:", errorJson);
+                        throw new Error(`API Error ${response.status}: ${errorJson.error || errorJson.message || 'Unknown error'}`);
+                    } catch (parseError) {
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+                }
+                
+                const data = await response.json();
+                console.log("✅ Projects data received:", data);
+                
+                if (data && data.projects) {
+                    console.log("✅ Found projects:", data.projects.length);
+                    availableProjects = data.projects; // Assign to global availableProjects
+                    const projectSelect = document.getElementById('project-select');
+                    projectSelect.innerHTML = ''; // Clear existing options
 
-        async function fetchProjectHealth() {
-            try {
-                const response = await fetch(`/api/project/health?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch project health');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching project health: ' + error.message);
-                return null;
-            }
-        }
+                    availableProjects.forEach(project => {
+                        const option = document.createElement('option');
+                        option.value = project.key;
+                        option.textContent = `${project.name} (${project.key})`;
+                        projectSelect.appendChild(option);
+                    });
 
-        async function fetchActionItems() {
-            try {
-                const response = await fetch(`/api/project/action-items?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch action items');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching action items: ' + error.message);
-                return null;
-            }
-        }
+                    // Set the current project based on sessionProjectKey or the first available project
+                    if (sessionProjectKey && availableProjects.some(p => p.key === sessionProjectKey)) {
+                        currentProject = sessionProjectKey;
+                    } else if (availableProjects.length > 0) {
+                        currentProject = availableProjects[0].key;
+                    }
+                    if (currentProject) {
+                        projectSelect.value = currentProject;
+                    }
 
-        async function fetchRisks() {
-            try {
-                const response = await fetch(`/api/project/risks?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch risks');
-                return await response.json();
+                    return data.projects;
+                } else {
+                    console.error("❌ No projects data or invalid format:", data);
+                    showError("No projects found. Please check your Jira integration.");
+                    return [];
+                }
+                
             } catch (error) {
-                showError('Error fetching risks: ' + error.message);
-                return null;
-            }
-        }
-
-        async function fetchProjects() {
-            try {
-                const response = await fetch('/api/projects');
-                if (!response.ok) throw new Error('Failed to fetch projects');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching projects: ' + error.message);
+                console.error("❌ fetchAvailableProjects error:", error);
+                showError(`Failed to load projects: ${error.message}`);
                 return [];
             }
         }
 
-        async function fetchProjectProgress() {
+        async function testJiraConnection() {
+            console.log("🧪 Testing Jira connection...");
+            
             try {
-                const response = await fetch(`/api/project/progress?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch project progress');
-                return await response.json();
+                const response = await fetch('/api/jira/test');
+                const data = await response.json();
+                
+                console.log("🧪 Jira test result:", data);
+                
+                if (response.ok) {
+                    showError(`✅ Jira Connected: ${data.user?.displayName || 'Success'}`, false);
+                    } else {
+                    showError(`❌ Jira Test Failed: ${data.error}`);
+                }
+                
+                return data;
             } catch (error) {
-                showError('Error fetching project progress: ' + error.message);
+                console.error("🧪 Jira test error:", error);
+                showError(`❌ Jira Test Error: ${error.message}`);
                 return null;
             }
         }
 
-        async function fetchProjectTeam() {
-            try {
-                const response = await fetch(`/api/project/team?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch project team');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching project team: ' + error.message);
-                return null;
-            }
+        async function fetchProjectStats() { 
+            return fetchData(`/api/jira/project-stats?projectKey=${currentProject}`); 
         }
 
-        async function fetchProjectBudget() {
-            try {
-                const response = await fetch('/api/project/budget');
-                if (!response.ok) throw new Error('Failed to fetch project budget');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching project budget: ' + error.message);
-                return null;
-            }
+        async function fetchProjectHealth() { 
+            return fetchData(`/api/jira/project-health?projectKey=${currentProject}`); 
         }
 
-        async function fetchProjectDeliverables() {
-            try {
-                const response = await fetch(`/api/project/deliverables?project=${currentProject}`);
-                if (!response.ok) throw new Error('Failed to fetch project deliverables');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching project deliverables: ' + error.message);
-                return null;
-            }
+        async function fetchActionItems() { 
+            return fetchData(`/api/jira/action-items?projectKey=${currentProject}`); 
         }
 
-        async function fetchTeamsAuthStatus() {
-            try {
-                const response = await fetch('/api/teams/auth-status');
-                if (!response.ok) throw new Error('Failed to fetch Teams auth status');
-                return await response.json();
-            } catch (error) {
-                showError('Error fetching Teams auth status: ' + error.message);
-                return { authenticated: false };
-            }
+        async function fetchRisks() { 
+            return fetchData(`/api/jira/risks?projectKey=${currentProject}`); 
         }
 
-        // Update UI functions
+        async function fetchProjectProgress() { 
+            return fetchData(`/api/jira/project-progress?projectKey=${currentProject}`); 
+        }
+
+        async function fetchProjectTeam() { 
+            return fetchData(`/api/jira/project-team?projectKey=${currentProject}`); 
+        }
+
+        async function fetchProjectBudget() { 
+            return fetchData(`/api/jira/project-budget?projectKey=${currentProject}`); 
+        }
+
+        async function fetchProjectDeliverables() { 
+            return fetchData(`/api/jira/project-deliverables?projectKey=${currentProject}`); 
+        }
+
+        async function fetchTeamsAuthStatus() { 
+            return fetchData('/api/teams/auth-status'); 
+        }
+
         function updateStats(stats) {
             if (!stats) return;
             
-            const statNumbers = document.querySelectorAll('.stat-number');
-            statNumbers[0].textContent = stats.totalIssues || 0;
-            statNumbers[1].textContent = stats.toDo || 0;
-            statNumbers[2].textContent = stats.inProgress || 0;
-            statNumbers[3].textContent = stats.completed || 0;
+            // Update the stat cards in the overview
+            const statCards = document.querySelectorAll('.stat-card');
+            if (statCards.length >= 4) {
+                // Total Issues
+                const totalIssuesNumber = statCards[0].querySelector('.stat-number');
+                if (totalIssuesNumber) totalIssuesNumber.textContent = stats.totalIssues || 0;
+                
+                // To Do
+                const toDoNumber = statCards[1].querySelector('.stat-number');
+                if (toDoNumber) toDoNumber.textContent = stats.toDo || 0;
+                
+                // In Progress  
+                const inProgressNumber = statCards[2].querySelector('.stat-number');
+                if (inProgressNumber) inProgressNumber.textContent = stats.inProgress || 0;
+                
+                // Completed
+                const completedNumber = statCards[3].querySelector('.stat-number');
+                if (completedNumber) completedNumber.textContent = stats.completed || 0;
+            }
+            
+            console.log('✅ Stats updated:', stats);
         }
 
         function updateHealthMetrics(health) {
             if (!health) return;
-
-            // Update health scores
+            
+            // Update health progress bars
             const healthItems = document.querySelectorAll('.health-item');
-            healthItems[0].querySelector('.progress-fill').style.width = `${health.overall}%`;
-            healthItems[0].querySelector('.health-value').textContent = `${health.overall}%`;
             
-            healthItems[1].querySelector('.progress-fill').style.width = `${health.schedule}%`;
-            healthItems[1].querySelector('.health-value').textContent = `${health.schedule}%`;
+            healthItems.forEach((item, index) => {
+                const progressFill = item.querySelector('.progress-fill');
+                const healthValue = item.querySelector('.health-value');
+                
+                if (progressFill && healthValue) {
+                    let value = 0;
+                    let className = 'progress-green';
+                    
+                    switch(index) {
+                        case 0: // Overall Health
+                            value = health.overall || 0;
+                            break;
+                        case 1: // Schedule
+                            value = health.schedule || 0;
+                            className = value >= 80 ? 'progress-green' : value >= 60 ? 'progress-yellow' : 'progress-red';
+                            break;
+                        case 2: // Budget
+                            value = health.budget || 0;
+                            break;
+                        case 3: // Quality
+                            value = health.quality || 0;
+                            break;
+                    }
+                    
+                    progressFill.style.width = `${value}%`;
+                    progressFill.className = `progress-fill ${className}`;
+                    healthValue.textContent = `${value}%`;
+                }
+            });
             
-            healthItems[2].querySelector('.progress-fill').style.width = `${health.budget}%`;
-            healthItems[2].querySelector('.health-value').textContent = `${health.budget}%`;
+            // Update key metrics cards
+            const metricCards = document.querySelectorAll('.metric-card');
+            if (metricCards.length >= 4) {
+                metricCards[0].querySelector('.metric-value').textContent = `${health.onSchedule || 0}%`;
+                metricCards[1].querySelector('.metric-value').textContent = `${health.budgetHealth || 0}%`;
+                metricCards[2].querySelector('.metric-value').textContent = health.activeRisks || 0;
+                metricCards[3].querySelector('.metric-value').textContent = health.pendingApprovals || 0;
+            }
             
-            healthItems[3].querySelector('.progress-fill').style.width = `${health.quality}%`;
-            healthItems[3].querySelector('.health-value').textContent = `${health.quality}%`;
-
-            // Update key metrics
-            const metrics = document.querySelectorAll('.metric-value');
-            metrics[0].textContent = `${health.onSchedule}%`;
-            metrics[1].textContent = `${health.budgetHealth}%`;
-            metrics[2].textContent = health.activeRisks || 0;
-            metrics[3].textContent = health.pendingApprovals || 0;
+            console.log('✅ Health metrics updated:', health);
         }
 
         function updateActionItems(items) {
@@ -1013,7 +1528,7 @@
                         <div class="item-meta">${item.assignee} • Due: ${new Date(item.dueDate).toLocaleDateString()}</div>
                     </div>
                 `).join('');
-            } else {
+                } else {
                 console.error("Action items container not found (using ID).");
             }
         }
@@ -1057,11 +1572,11 @@
                         <div class="item-header">
                             <div class="item-title">${activity.title}</div>
                             <span class="badge">${activity.status}</span>
-                        </div>
+                                </div>
                         <div class="item-meta">${activity.creator} • ${new Date(activity.updated).toLocaleDateString()}</div>
-                    </div>
-                `).join('');
-            } else {
+                            </div>
+                        `).join('');
+                    } else {
                 console.error("Recent activities container not found.");
             }
         }
@@ -1080,7 +1595,7 @@
                         <div class="item-meta">${member.emailAddress}</div>
                     </div>
                 `).join('');
-            } else {
+                } else {
                 console.error("Team members list container not found.");
             }
         }
@@ -1125,14 +1640,14 @@
 
             if (status.authenticated) {
                 if (statusText) statusText.textContent = 'Teams Connected';
-                if (statusDot) statusDot.style.background = '#22c55e'; // Green
+                if (statusDot) statusDot.style.background = '#22c55e';
                 if (joinBtn) {
                     joinBtn.onclick = () => console.log("Teams is connected. Ready to create/join meeting!");
-                    joinBtn.textContent = "Create Meeting"; // Or "Join Meeting" depending on next step
+                    joinBtn.textContent = "Create Meeting";
                 }
             } else {
                 if (statusText) statusText.textContent = 'Teams Disconnected';
-                if (statusDot) statusDot.style.background = '#ef4444'; // Red
+                if (statusDot) statusDot.style.background = '#ef4444';
                 if (joinBtn) {
                     joinBtn.onclick = () => {
                         window.location.href = '/oauth/teams/login';
@@ -1142,71 +1657,277 @@
             }
         }
 
-        // Main update function
+        // New function to fetch New Timeline data
+        async function fetchNewTimelineData() {
+            return fetchData(`/api/jira/new-timeline-data?projectKey=${currentProject}`);
+        }
+
+        // New function to update the new timeline
+        function updateNewTimeline(timelineData) {
+            if (!timelineData) return;
+
+            const overallProgressElement = document.getElementById('overall-progress-timeline');
+            const timelineProgressFill = document.getElementById('timeline-progress-fill-new');
+            const timelineNodesGrid = document.getElementById('timeline-nodes-grid');
+
+            if (overallProgressElement) {
+                overallProgressElement.textContent = `${timelineData.overallProgress}%`;
+            }
+            if (timelineProgressFill) {
+                timelineProgressFill.style.width = `${timelineData.overallProgress}%`;
+            }
+
+            if (timelineNodesGrid) {
+                timelineNodesGrid.innerHTML = ''; // Clear existing nodes
+                timelineData.columns.forEach(column => {
+                    const nodeContainer = document.createElement('div');
+                    nodeContainer.classList.add('timeline-node-container');
+
+                    const nodeCircle = document.createElement('div');
+                    nodeCircle.classList.add('timeline-node-circle');
+                    nodeCircle.classList.add(column.status); // Add status class for coloring
+                    nodeCircle.innerHTML = '<span class="inner-dot"></span>';
+
+                    const nodeLabel = document.createElement('div');
+                    nodeLabel.classList.add('timeline-node-label');
+                    nodeLabel.textContent = column.title;
+
+                    const nodeProgress = document.createElement('div');
+                    nodeProgress.classList.add('timeline-node-progress');
+                    nodeProgress.textContent = `${column.progress}%`;
+
+                    nodeContainer.appendChild(nodeCircle);
+                    nodeContainer.appendChild(nodeLabel);
+                    nodeContainer.appendChild(nodeProgress);
+
+                    timelineNodesGrid.appendChild(nodeContainer);
+                });
+            } else {
+                console.error("Timeline nodes grid container not found!");
+            }
+            console.log('✅ New Project Progress Timeline updated successfully', timelineData);
+        }
+
+        // Existing function to fetch Kanban data
+        async function fetchKanbanData() {
+            return fetchData(`/api/jira/kanban-board-data?projectKey=${currentProject}`);
+        }
+
+        // Existing function to update Kanban board
+        function updateKanbanBoard(kanbanData) {
+            if (!kanbanData) return;
+
+            const kanbanContainer = document.getElementById('kanban-columns-container');
+            if (!kanbanContainer) {
+                console.error("Kanban columns container not found!");
+                return;
+            }
+
+            kanbanContainer.innerHTML = ''; // Clear existing columns
+
+            const columnOrder = [
+                "TO DO",
+                "DAY 0 INITIATION",
+                "READINESS FOR DAY 1",
+                "SOLUTION DESIGN",
+                "IN PROGRESS",
+                "DATA MIGRATION",
+                "REPORTS",
+                "GO LIVE INITIATION",
+                "TAKE OVER FORM"
+            ];
+
+            columnOrder.forEach(columnTitle => {
+                const issuesInColumn = kanbanData[columnTitle] || [];
+
+                const columnDiv = document.createElement('div');
+                columnDiv.classList.add('kanban-column');
+
+                const columnHeader = document.createElement('div');
+                columnHeader.classList.add('column-header');
+                columnHeader.innerHTML = `<h3>${columnTitle}</h3><span>${issuesInColumn.length}</span>`;
+                columnDiv.appendChild(columnHeader);
+
+                const cardList = document.createElement('div');
+                cardList.classList.add('card-list');
+
+                issuesInColumn.forEach(issue => {
+                    const card = document.createElement('div');
+                    card.classList.add('kanban-card');
+
+                    // Determine card background based on display_status
+                    let statusClass = '';
+                    let statusBadgeText = '';
+                    if (issue.status === 'Done') {
+                        statusClass = 'card-done';
+                        statusBadgeText = 'Completed';
+                    } else if (issue.status === 'In Progress') {
+                        statusClass = 'card-in-progress';
+                        statusBadgeText = 'In Progress';
+                    } else if (issue.status === 'Not Started') {
+                        statusClass = 'card-not-started';
+                        statusBadgeText = 'Not Started';
+                    } else {
+                        statusClass = 'card-other'; // For unmapped Jira statuses
+                        statusBadgeText = issue.jiraStatus; // Use raw Jira status for unmapped
+                    }
+                    card.classList.add(statusClass);
+
+
+                    card.innerHTML = `
+                        <h4 class="card-title">${issue.title}</h4>
+                        <div class="card-meta">
+                            <span class="card-key">${issue.key}</span>
+                            <span class="card-date">Started: ${new Date(issue.startDate).toLocaleDateString()}</span>
+                        </div>
+                        <div class="card-status-badge badge-${issue.status.toLowerCase().replace(/ /g, '-s')}">${statusBadgeText}</div>
+                    `;
+                    cardList.appendChild(card);
+                });
+                columnDiv.appendChild(cardList);
+                kanbanContainer.appendChild(columnDiv);
+            });
+            console.log('✅ Kanban Board updated successfully', kanbanData);
+        }
+
+        async function validateCurrentProject() {
+            if (!currentProject) {
+                showError('No project selected');
+                return false;
+            }
+            
+            try {
+                const validationResponse = await fetch(`/api/jira/validate-project?projectKey=${currentProject}`);
+                const validation = await validationResponse.json();
+                
+                if (validation.valid) {
+                    console.log(`✅ Project ${currentProject} is valid:`, validation.project);
+                    return true;
+                } else {
+                    console.error(`❌ Project ${currentProject} is not valid:`, validation.error);
+                    showError(`Project ${currentProject} not found or inaccessible`);
+                    return false;
+                }
+            } catch (error) {
+                console.error(`❌ Project validation error:`, error);
+                showError(`Failed to validate project: ${error.message}`);
+                return false;
+            }
+        }
+
         async function updateDashboard(projectKey) {
             if (isLoading) return;
             
             currentProject = projectKey;
-            document.getElementById('project-display-name').textContent = `Project: ${availableProjects.find(p => p.key === currentProject)?.name || currentProject}`;
-
+            const projectName = availableProjects.find(p => p.key === currentProject)?.name || currentProject;
+            document.getElementById('project-display-name').textContent = projectName;
             showLoading();
-            
+
             try {
-                const [stats, health, actionItems, risks, progress, team, budget, deliverables, teamsAuthStatus] = await Promise.all([
-                    fetchProjectStats(),
-                    fetchProjectHealth(),
-                    fetchActionItems(),
-                    fetchRisks(),
-                    fetchProjectProgress(),
-                    fetchProjectTeam(),
-                    fetchProjectBudget(),
-                    fetchProjectDeliverables(),
-                    fetchTeamsAuthStatus()
+                // Fetch all data concurrently
+                const [statsData, healthData, actionItemsData, risksData, kanbanData, newTimelineData] = await Promise.all([
+                    fetchData(`/api/jira/project-stats?projectKey=${projectKey}`),
+                    fetchData(`/api/jira/project-health?projectKey=${projectKey}`),
+                    fetchData(`/api/jira/action-items?projectKey=${projectKey}`),
+                    fetchData(`/api/jira/risks?projectKey=${projectKey}`),
+                    fetchKanbanData(), // This already uses currentProject
+                    fetchNewTimelineData() // Fetch new timeline data
                 ]);
 
-                updateStats(stats);
-                updateHealthMetrics(health);
-                updateActionItems(actionItems);
-                updateRisks(risks);
-                updateProgress(progress);
-                updateTeam(team);
-                updateBudget(budget);
-                updateDeliverables(deliverables);
-                updateTeamsAuthStatus(teamsAuthStatus);
+                // Update UI components
+                updateStats(statsData);
+                updateHealthMetrics(healthData);
+                updateActionItems(actionItemsData);
+                updateRisks(risksData);
+                updateKanbanBoard(kanbanData); // Update the Kanban board
+                updateNewTimeline(newTimelineData); // Update the new timeline
+
+                console.log('Dashboard updated successfully for project:', projectKey);
             } catch (error) {
-                showError('Error updating dashboard: ' + error.message);
+                console.error('Error updating dashboard:', error);
+                showError(`Failed to load dashboard data: ${error.message}`);
             } finally {
                 hideLoading();
             }
         }
 
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', async () => {
-            availableProjects = await fetchProjects();
-            const projectSelect = document.getElementById('project-select');
-
-            if (availableProjects.length > 0) {
-                availableProjects.forEach(project => {
-                    const option = document.createElement('option');
-                    option.value = project.key;
-                    option.textContent = project.name;
-                    projectSelect.appendChild(option);
-                });
-                // Set initial project to the first one or a default
-                currentProject = availableProjects[0].key;
-                projectSelect.value = currentProject;
-                updateDashboard(currentProject);
-            } else {
-                showError('No Jira projects found. Please ensure your Jira integration is set up correctly.');
+        // Test all endpoints for debugging
+        async function testAllEndpoints() {
+            const projectKey = currentProject;
+            if (!projectKey) {
+                console.warn('No project selected for testing endpoints.');
+                return;
             }
+            console.log(`\n--- Testing all API endpoints for project: ${projectKey} ---\n`);
 
-            projectSelect.addEventListener('change', (event) => {
-                updateDashboard(event.target.value);
+            const endpoints = {
+                'Project Stats': `/api/jira/project-stats?projectKey=${projectKey}`,
+                'Project Health': `/api/jira/project-health?projectKey=${projectKey}`,
+                'Action Items': `/api/jira/action-items?projectKey=${projectKey}`,
+                'Risks': `/api/jira/risks?projectKey=${projectKey}`,
+                'Kanban Board Data': `/api/jira/kanban-board-data?projectKey=${projectKey}`,
+                'New Timeline Data': `/api/jira/new-timeline-data?projectKey=${projectKey}`,
+                'Teams Auth Status': '/api/teams/auth-status'
+            };
+
+            for (const [name, url] of Object.entries(endpoints)) {
+                try {
+                    const data = await fetchData(url);
+                    console.log(`✅ ${name} (${url}):`, data);
+                } catch (error) {
+                    console.error(`❌ ${name} (${url}) error:`, error);
+                }
+            }
+            console.log('\n--- All endpoint tests completed ---\n');
+        }
+
+        // Event Listeners and Initial Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initial project load, then test all endpoints
+            await validateCurrentProject();
+            await fetchAvailableProjects();
+            await fetchTeamsAuthStatus(); // Fetch Teams auth status on load
+            if (currentProject) {
+                await updateDashboard(currentProject);
+            }
+            // Automatically run endpoint tests for debugging after initial load
+            testAllEndpoints(); 
+        });
+
+        // Add change listener to project select
+        document.getElementById('project-select').addEventListener('change', (event) => {
+            const newProjectKey = event.target.value;
+            updateDashboard(newProjectKey);
+        });
+
+        // Initial call to set current project if available from session
+        if (sessionProjectKey) {
+            currentProject = sessionProjectKey;
+        }
+
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
             
-            // Refresh data every 5 minutes
-            setInterval(() => updateDashboard(currentProject), 5 * 60 * 1000);
-        });
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabId);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Add active class to clicked button
+            const clickedButton = document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`);
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+            }
+        }
     </script>
 </body>
 </html>
