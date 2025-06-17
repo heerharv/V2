@@ -880,6 +880,299 @@
             top: 50%; /* Center with respect to the line container */
             transform: translateY(-50%);
         }
+
+        /* New Timeline Styles */
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 4rem 0;
+            position: relative;
+        }
+
+        .timeline-progress {
+            position: absolute;
+            height: 4px;
+            background: linear-gradient(to right, #4CAF50, #8A2BE2); /* Green to Purple */
+            background-size: 200% 100%; /* For the animation */
+            z-index: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            width: 50%; /* Example: adjust dynamically based on progress */
+            border-radius: 2px;
+            transition: width 0.7s ease-out; /* Smooth transition for width */
+            animation: gradientPulse 3s infinite alternate; /* Pulsating gradient animation */
+        }
+
+        @keyframes gradientPulse {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .timeline-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: nodeFadeIn 0.5s ease-out forwards;
+            /* animation-delay will be set via JS */
+        }
+
+        @keyframes nodeFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .node-circle {
+            width: 40px;
+            height: 40px;
+            background-color: #581c87; /* Dark purple from background */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            border: 2px solid #9333ea; /* Purple border */
+            transition: all 0.3s ease;
+            aspect-ratio: 1/1; /* Ensure perfect circle aspect ratio */
+        }
+
+        .node-circle.completed {
+            background-color: #22c55e; /* Green for completed */
+            border-color: #22c55e;
+            animation: nodeCompleteBounce 0.4s ease-out;
+        }
+
+        @keyframes nodeCompleteBounce {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .node-circle.current {
+            background-color: #8B5CF6; /* Lighter purple for current */
+            border-color: #8B5CF6;
+            animation: nodeCurrentPulse 1.5s infinite alternate;
+        }
+
+        @keyframes nodeCurrentPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .node-circle .check-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .node-label {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .node-circle.completed + .node-label {
+            color: white;
+        }
+        /* End New Timeline Styles */
+
+        /* Project Details Specific Styles */
+        .project-description-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            text-align: justify;
+        }
+
+        .deliverables-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .deliverables-list li {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid;
+            transition: all 0.2s ease;
+        }
+
+        .deliverables-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .deliverables-list li.completed {
+            border-left-color: #22c55e; /* Green */
+        }
+
+        .deliverables-list li.in-progress {
+            border-left-color: #eab308; /* Yellow */
+        }
+
+        .deliverables-list li.pending {
+            border-left-color: #ef4444; /* Red */
+        }
+
+        .deliverable-item {
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .deliverable-status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            text-transform: uppercase;
+        }
+
+        .deliverable-status.completed {
+            background: rgba(34, 197, 94, 0.2); /* Green background */
+            color: #86efac; /* Lighter green text */
+        }
+
+        .deliverable-status.in-progress {
+            background: rgba(234, 179, 8, 0.2); /* Yellow background */
+            color: #fcd34d; /* Lighter yellow text */
+        }
+
+        .deliverable-status.pending {
+            background: rgba(239, 68, 68, 0.2); /* Red background */
+            color: #fca5a5; /* Lighter red text */
+        }
+
+        .deliverable-date {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-left: 1rem;
+        }
+
+        /* Team Members Specific Styles */
+        .team-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .team-member-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            transition: transform 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .team-member-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .member-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 3px solid #8b5cf6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .member-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .member-role {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .member-email {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container, .main-content {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            
+            .two-column, .action-risk-grid, .team-list {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .tab-list {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        .team-members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        .team-member-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .team-member-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .member-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .member-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .member-role {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .member-email {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -934,14 +1227,48 @@
             <!-- Tab Navigation -->
             <div class="tab-navigation">
                 <div class="tab-list">
-                    <button class="tab-button active" onclick="showTab('overview')">Overview</button>
-                    <button class="tab-button" onclick="showTab('progress')">Progress</button>
-                    <button class="tab-button" onclick="showTab('budget')">Budget</button>
-                    <button class="tab-button" onclick="showTab('deliverables')">Deliverables</button>
-                    <button class="tab-button" onclick="showTab('risks')">Risks</button>
-                    <button class="tab-button" onclick="showTab('team')">Team</button>
+                    <button class="tab-button active" data-tab="dashboard">Dashboard</button>
+                    <button class="tab-button" data-tab="project-details">Project Details</button>
+                    <button class="tab-button" data-tab="team-members">Team Members</button>
+                    <button class="tab-button" data-tab="settings">Settings</button>
                 </div>
             </div>
+
+            <!-- New Timeline HTML -->
+            <div class="timeline-container">
+                <div class="timeline-progress"></div>
+                <div class="timeline-node">
+                    <div class="node-circle completed">
+                        <svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>
+                    </div>
+                    <span class="node-label">Register</span>
+                </div>
+                <div class="timeline-node">
+                    <div class="node-circle completed">
+                        <svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>
+                    </div>
+                    <span class="node-label">Respond</span>
+                </div>
+                <div class="timeline-node">
+                    <div class="node-circle completed">
+                        <svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>
+                    </div>
+                    <span class="node-label">Configure</span>
+                </div>
+                <div class="timeline-node">
+                    <div class="node-circle current">4</div>
+                    <span class="node-label">Validate</span>
+                </div>
+                <div class="timeline-node">
+                    <div class="node-circle">5</div>
+                    <span class="node-label">Test</span>
+                </div>
+                <div class="timeline-node">
+                    <div class="node-circle">6</div>
+                    <span class="node-label">Go-Live</span>
+                </div>
+            </div>
+            <!-- End New Timeline HTML -->
         </div>
     </header>
 
@@ -1224,16 +1551,88 @@
             </div>
         </div>
 
-        <div id="team" class="tab-content">
+        <div id="team-members" class="tab-content">
             <div class="content-section">
                 <div class="section-header">
-                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17 20v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 4a4 4 0 100 8 4 4 0 000-8z"/>
-                    </svg>
-                    <h2 class="section-title">Project Team</h2>
+                    <h2 class="section-title">Team Members</h2>
                 </div>
-                <div class="team-list" id="team-members-list">
-                    <p style="color: rgba(255,255,255,0.7); text-align: center; padding: 2rem;">Loading team members...</p>
+                <div class="team-members-grid" id="team-members-list">
+                    <!-- Team members will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Details Tab Content -->
+        <div id="project-details" class="tab-content">
+            <!-- Project Description/Overview Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg>
+                    <h2 class="section-title">Project Overview</h2>
+                </div>
+                <p id="project-description" class="project-description-text">Loading project description...</p>
+            </div>
+
+            <!-- Key Metrics/Statistics Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M16 11V3H8v8H2v10h20V11h-6zM10 5h4v6h-4V5zm-2 14v-6h12v6H8z"></path></svg>
+                    <h2 class="section-title">Key Metrics</h2>
+                </div>
+                <div id="metrics-grid" class="stats-grid">
+                    <!-- Metrics will be loaded here dynamically -->
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(45deg, #10b981, #059669);">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M5 13H3l9 9 9-9h-2v-2H5v2zM12 2l-9 9h2v2h14v-2h2L12 2z"></path></svg>
+                        </div>
+                        <div id="metric-total-tasks" class="stat-number">0</div>
+                        <div class="stat-label">Total Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(45deg, #f59e0b, #d97706);">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM12 6c-3.87 0-7 3.13-7 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 12c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-10c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path></svg>
+                        </div>
+                        <div id="metric-completed-tasks" class="stat-number">0</div>
+                        <div class="stat-label">Completed Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(45deg, #ef4444, #dc2626);">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+                        </div>
+                        <div id="metric-open-issues" class="stat-number">0</div>
+                        <div class="stat-label">Open Issues</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(45deg, #8b5cf6, #7c3aed);">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM19 19H5V5h14v14zM7 11h10v2H7z"></path></svg>
+                        </div>
+                        <div id="metric-progress" class="stat-number">0%</div>
+                        <div class="stat-label">Overall Progress</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deliverables/Milestones Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2h-4v2h4V4zm6 15H4V8h16v11z"></path></svg>
+                    <h2 class="section-title">Deliverables & Milestones</h2>
+                </div>
+                <ul id="deliverables-list" class="deliverables-list">
+                    <!-- Deliverables will be loaded here dynamically -->
+                    <li>Loading deliverables...</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Team Members Tab Content -->
+        <div id="team-members" class="tab-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <h2 class="section-title">Team Members</h2>
+                </div>
+                <div class="team-members-grid" id="team-members-list">
+                    <!-- Team members will be dynamically inserted here -->
                 </div>
             </div>
         </div>
@@ -1438,6 +1837,63 @@
 
         async function fetchTeamsAuthStatus() { 
             return fetchData('/api/teams/auth-status'); 
+        }
+
+        // New functions for Project Details tab
+        async function fetchProjectOverview() {
+            return fetchData(`/api/jira/project-overview?projectKey=${currentProject}`);
+        }
+
+        async function fetchKeyMetrics() {
+            return fetchData(`/api/jira/key-metrics?projectKey=${currentProject}`);
+        }
+
+        async function fetchDeliverables() {
+            return fetchData(`/api/jira/deliverables?projectKey=${currentProject}`);
+        }
+
+        // New functions for Team Members tab
+        async function fetchTeamMembers() {
+            console.log('Fetching team members for project:', currentProject);
+            const data = await fetchData(`/api/jira/team-members?projectKey=${currentProject}`);
+            console.log('Team members data received:', data);
+            return data;
+        }
+
+        function updateTeamMembers(teamMembersData) {
+            console.log('Updating team members UI with data:', teamMembersData);
+            const teamMembersList = document.getElementById('team-members-list');
+            if (!teamMembersList) {
+                console.error('Team members list container not found!');
+                return;
+            }
+            if (!teamMembersData || !teamMembersData.length) {
+                console.log('No team members data available');
+                teamMembersList.innerHTML = '<p style="color: rgba(255,255,255,0.7); text-align: center; padding: 2rem;">No team members found.</p>';
+                return;
+            }
+
+            teamMembersList.innerHTML = ''; // Clear existing items
+            teamMembersData.forEach(member => {
+                console.log('Creating card for member:', member);
+                const memberCard = document.createElement('div');
+                memberCard.classList.add('team-member-card');
+                memberCard.innerHTML = `
+                    <img src="${member.avatarUrl || '/static/images/Uncia2 1.jpg'}" alt="${member.displayName}'s avatar" class="member-avatar">
+                    <h4 class="member-name">${member.displayName}</h4>
+                    <p class="member-role">${member.role || 'Team Member'}</p>
+                    <p class="member-email">${member.emailAddress || 'No email available'}</p>
+                `;
+                teamMembersList.appendChild(memberCard);
+            });
+            console.log('Team members UI update completed');
+        }
+
+        function updateProjectOverview(overviewData) {
+            const projectDescriptionElement = document.getElementById('project-description');
+            if (projectDescriptionElement && overviewData) {
+                projectDescriptionElement.textContent = overviewData.description || "No project description available.";
+            }
         }
 
         function updateStats(stats) {
@@ -1664,48 +2120,65 @@
 
         // New function to update the new timeline
         function updateNewTimeline(timelineData) {
-            if (!timelineData) return;
+            if (!timelineData || !timelineData.nodes) return;
 
-            const overallProgressElement = document.getElementById('overall-progress-timeline');
-            const timelineProgressFill = document.getElementById('timeline-progress-fill-new');
-            const timelineNodesGrid = document.getElementById('timeline-nodes-grid');
-
-            if (overallProgressElement) {
-                overallProgressElement.textContent = `${timelineData.overallProgress}%`;
-            }
-            if (timelineProgressFill) {
-                timelineProgressFill.style.width = `${timelineData.overallProgress}%`;
+            const timelineContainer = document.querySelector('.timeline-container');
+            const timelineProgress = document.querySelector('.timeline-progress');
+            if (!timelineContainer || !timelineProgress) {
+                console.error("Timeline container or progress bar not found!");
+                return;
             }
 
-            if (timelineNodesGrid) {
-                timelineNodesGrid.innerHTML = ''; // Clear existing nodes
-                timelineData.columns.forEach(column => {
-                    const nodeContainer = document.createElement('div');
-                    nodeContainer.classList.add('timeline-node-container');
+            // Clear existing nodes, but keep the progress bar
+            timelineContainer.querySelectorAll('.timeline-node').forEach(node => node.remove());
 
-                    const nodeCircle = document.createElement('div');
-                    nodeCircle.classList.add('timeline-node-circle');
-                    nodeCircle.classList.add(column.status); // Add status class for coloring
-                    nodeCircle.innerHTML = '<span class="inner-dot"></span>';
+            const totalNodes = timelineData.nodes.length;
+            const completedNodes = timelineData.nodes.filter(node => node.status === 'completed').length;
+            const currentNodeIndex = timelineData.nodes.findIndex(node => node.status === 'current');
 
-                    const nodeLabel = document.createElement('div');
-                    nodeLabel.classList.add('timeline-node-label');
-                    nodeLabel.textContent = column.title;
-
-                    const nodeProgress = document.createElement('div');
-                    nodeProgress.classList.add('timeline-node-progress');
-                    nodeProgress.textContent = `${column.progress}%`;
-
-                    nodeContainer.appendChild(nodeCircle);
-                    nodeContainer.appendChild(nodeLabel);
-                    nodeContainer.appendChild(nodeProgress);
-
-                    timelineNodesGrid.appendChild(nodeContainer);
-                });
-            } else {
-                console.error("Timeline nodes grid container not found!");
+            // Calculate progress for the progress bar
+            // If there's a current node, progress goes up to that node's position
+            // Otherwise, it's based on completed nodes
+            let progressPercentage = 0;
+            if (totalNodes > 1) {
+                if (currentNodeIndex !== -1) {
+                    progressPercentage = (currentNodeIndex / (totalNodes - 1)) * 100;
+                } else if (completedNodes === totalNodes) {
+                    progressPercentage = 100; // All completed
+                } else if (completedNodes > 0) {
+                    // If some are completed but no current, progress to last completed node
+                    progressPercentage = ((completedNodes - 1) / (totalNodes - 1)) * 100;
+                }
             }
-            console.log('✅ New Project Progress Timeline updated successfully', timelineData);
+            timelineProgress.style.width = `${progressPercentage}%`;
+
+            timelineData.nodes.forEach((node, index) => {
+                const nodeElement = document.createElement('div');
+                nodeElement.classList.add('timeline-node');
+                nodeElement.style.animationDelay = `${index * 0.1}s`; // Staggered animation delay
+
+                const nodeCircle = document.createElement('div');
+                nodeCircle.classList.add('node-circle');
+
+                if (node.status === 'completed') {
+                    nodeCircle.classList.add('completed');
+                    nodeCircle.innerHTML = '<svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>';
+                } else if (node.status === 'current') {
+                    nodeCircle.classList.add('current');
+                    nodeCircle.textContent = node.label;
+                } else {
+                    nodeCircle.textContent = node.label;
+                }
+
+                const nodeLabel = document.createElement('span');
+                nodeLabel.classList.add('node-label');
+                nodeLabel.textContent = node.name;
+
+                nodeElement.appendChild(nodeCircle);
+                nodeElement.appendChild(nodeLabel);
+                timelineContainer.appendChild(nodeElement);
+            });
+            console.log('✅ New Timeline updated successfully', timelineData);
         }
 
         // Existing function to fetch Kanban data
@@ -1825,13 +2298,17 @@
 
             try {
                 // Fetch all data concurrently
-                const [statsData, healthData, actionItemsData, risksData, kanbanData, newTimelineData] = await Promise.all([
+                const [statsData, healthData, actionItemsData, risksData, kanbanData, newTimelineData, overviewData, metricsData, deliverablesData, teamMembersData] = await Promise.all([
                     fetchData(`/api/jira/project-stats?projectKey=${projectKey}`),
                     fetchData(`/api/jira/project-health?projectKey=${projectKey}`),
                     fetchData(`/api/jira/action-items?projectKey=${projectKey}`),
                     fetchData(`/api/jira/risks?projectKey=${projectKey}`),
                     fetchKanbanData(), // This already uses currentProject
-                    fetchNewTimelineData() // Fetch new timeline data
+                    fetchData(`/api/jira/new-timeline-data?projectKey=${projectKey}`),
+                    fetchProjectOverview(), // Fetch project overview data
+                    fetchKeyMetrics(), // Fetch key metrics data
+                    fetchDeliverables(), // Fetch deliverables data
+                    fetchTeamMembers() // Fetch team members data
                 ]);
 
                 // Update UI components
@@ -1841,6 +2318,10 @@
                 updateRisks(risksData);
                 updateKanbanBoard(kanbanData); // Update the Kanban board
                 updateNewTimeline(newTimelineData); // Update the new timeline
+                updateProjectOverview(overviewData); // Update project overview
+                updateKeyMetrics(metricsData); // Update key metrics
+                updateDeliverables(deliverablesData); // Update deliverables
+                updateTeamMembers(teamMembersData); // Update team members
 
                 console.log('Dashboard updated successfully for project:', projectKey);
             } catch (error) {
@@ -1905,7 +2386,33 @@
             currentProject = sessionProjectKey;
         }
 
+        // Add event listeners for tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                console.log('Tab clicked:', tabId);
+                showTab(tabId);
+                
+                // Fetch specific data based on the active tab
+                if (currentProject) {
+                    if (tabId === 'team-members') {
+                        console.log('Fetching team members data...');
+                        fetchTeamMembers().then(data => {
+                            console.log('Team members data fetched:', data);
+                            updateTeamMembers(data);
+                        }).catch(error => {
+                            console.error('Error fetching team members:', error);
+                            showError('Failed to load team members data');
+                        });
+                    } else {
+                        updateDashboard(currentProject);
+                    }
+                }
+            });
+        });
+
         function showTab(tabId) {
+            console.log('Showing tab:', tabId);
             // Hide all tab contents
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -1920,13 +2427,92 @@
             const selectedTab = document.getElementById(tabId);
             if (selectedTab) {
                 selectedTab.classList.add('active');
+                console.log('Tab content activated:', tabId);
+            } else {
+                console.error('Tab content not found:', tabId);
             }
             
             // Add active class to clicked button
-            const clickedButton = document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`);
+            const clickedButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
             if (clickedButton) {
                 clickedButton.classList.add('active');
+                console.log('Tab button activated:', tabId);
+            } else {
+                console.error('Tab button not found:', tabId);
             }
+        }
+
+        // New function to update Project Overview
+        async function updateProjectOverview() {
+            try {
+                const overviewData = await fetchProjectOverview();
+                updateProjectOverview(overviewData);
+            } catch (error) {
+                console.error('Error updating project overview:', error);
+                showError('Failed to load project overview.');
+            }
+        }
+
+        // New function to update Key Metrics
+        async function updateKeyMetrics() {
+            try {
+                const metricsData = await fetchKeyMetrics();
+                updateKeyMetrics(metricsData);
+            } catch (error) {
+                console.error('Error updating key metrics:', error);
+                showError('Failed to load key metrics.');
+            }
+        }
+
+        // New function to update Deliverables
+        async function updateDeliverables() {
+            try {
+                const deliverablesData = await fetchDeliverables();
+                updateDeliverables(deliverablesData);
+                } catch (error) {
+                console.error('Error updating deliverables:', error);
+                showError('Failed to load deliverables.');
+            }
+        }
+
+        // Update Project Overview
+        function updateProjectOverview(overviewData) {
+            const projectDescriptionElement = document.getElementById('project-description');
+            if (projectDescriptionElement && overviewData) {
+                projectDescriptionElement.textContent = overviewData.description || "No project description available.";
+            }
+        }
+
+        // Update Key Metrics
+        function updateKeyMetrics(metricsData) {
+            if (!metricsData) return;
+            document.getElementById('metric-total-tasks').textContent = metricsData.totalTasks || 0;
+            document.getElementById('metric-completed-tasks').textContent = metricsData.completedTasks || 0;
+            document.getElementById('metric-open-issues').textContent = metricsData.openIssues || 0;
+            document.getElementById('metric-progress').textContent = `${metricsData.overallProgress || 0}%`;
+        }
+
+        // Update Deliverables
+        function updateDeliverables(deliverablesData) {
+            const deliverablesList = document.getElementById('deliverables-list');
+            if (!deliverablesList || !deliverablesData || !deliverablesData.length) {
+                deliverablesList.innerHTML = '<li>No deliverables found.</li>';
+                return;
+            }
+
+            deliverablesList.innerHTML = ''; // Clear existing items
+            deliverablesData.forEach(deliverable => {
+                const listItem = document.createElement('li');
+                listItem.classList.add(deliverable.status.toLowerCase().replace(/ /g, '-')); // e.g., 'completed', 'in-progress'
+                listItem.innerHTML = `
+                    <span class="deliverable-item">${deliverable.name}</span>
+                    <div>
+                        <span class="deliverable-status ${deliverable.status.toLowerCase().replace(/ /g, '-')}">${deliverable.status}</span>
+                        <span class="deliverable-date">Due: ${deliverable.dueDate}</span>
+                        </div>
+                `;
+                deliverablesList.appendChild(listItem);
+            });
         }
     </script>
 </body>

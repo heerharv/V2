@@ -1418,41 +1418,86 @@ def get_jira_project_team():
         
         logger.info(f"Getting project team for: {project_key}")
         
-        # Get unique assignees from project issues
-        url = f"{JIRA_DOMAIN}/rest/api/3/search"
-        params = {
-            'jql': f'project = "{project_key}" AND assignee IS NOT EMPTY',
-            'maxResults': 100,
-            'fields': 'assignee'
-        }
+        # Get project roles
+        roles_url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}/role"
+        roles_response = make_jira_request(roles_url)
+        roles_data = roles_response.json()
         
-        response = make_jira_request(url, params)
+        # Standard Jira project role IDs
+        # 10002: Project Administrators
+        # 10003: Project Members
+        # 10004: Project Viewers
+        role_ids = ['10002', '10003', '10004']
         
-        if response.status_code == 200:
-            data = response.json()
-            issues = data.get('issues', [])
-            
-            team_members = {}
-            for issue in issues:
-                assignee = issue.get('fields', {}).get('assignee')
-                if assignee:
-                    account_id = assignee.get('accountId')
-                    if account_id not in team_members:
-                        team_members[account_id] = {
-                            "accountId": account_id,
-                            "displayName": assignee.get('displayName', 'Unknown'),
-                            "emailAddress": assignee.get('emailAddress', 'N/A'),
-                            "avatarUrl": assignee.get('avatarUrls', {}).get('48x48', '')
-                        }
-            
-            return jsonify(list(team_members.values()))
-        else:
-            logger.error(f"Failed to get project team: {response.status_code}")
-            return jsonify([])
-            
+        team_members = []
+        processed_account_ids = set()  # To avoid duplicates
+
+        for role_id in role_ids:
+            if role_id in roles_data:
+                # Get members for this role
+                members_url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}/role/{role_id}"
+                members_response = make_jira_request(members_url)
+                members_data = members_response.json()
+
+                # Get role name
+                role_url = roles_data[role_id]
+                role_response = make_jira_request(role_url)
+                role_data = role_response.json()
+                role_name = role_data.get('name', 'Team Member')
+
+                # Process each actor in the role
+                for actor in members_data.get('actors', []):
+                    if actor.get('type') == 'user' and actor['id'] not in processed_account_ids:
+                        try:
+                            # Get user details
+                            user_url = f"{JIRA_DOMAIN}/rest/api/3/user?accountId={actor['id']}"
+                            user_response = make_jira_request(user_url)
+                            user_data = user_response.json()
+
+                            # Get user's avatar URL
+                            avatar_url = user_data.get('avatarUrls', {}).get('48x48', '/static/images/Uncia2 1.jpg')
+
+                            team_members.append({
+                                'displayName': user_data.get('displayName', 'Unknown User'),
+                                'emailAddress': user_data.get('emailAddress', 'No email available'),
+                                'role': role_name,
+                                'avatarUrl': avatar_url
+                            })
+
+                            processed_account_ids.add(actor['id'])
+                        except Exception as e:
+                            logger.error(f"Error fetching user details for {actor['id']}: {str(e)}")
+                            continue
+
+        if not team_members:
+            # If no members found in standard roles, try to get project members directly
+            try:
+                project_url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}"
+                project_response = make_jira_request(project_url)
+                project_data = project_response.json()
+                
+                # Get project lead
+                if project_data.get('lead'):
+                    lead_id = project_data['lead']['accountId']
+                    if lead_id not in processed_account_ids:
+                        user_url = f"{JIRA_DOMAIN}/rest/api/3/user?accountId={lead_id}"
+                        user_response = make_jira_request(user_url)
+                        user_data = user_response.json()
+                        
+                        team_members.append({
+                            'displayName': user_data.get('displayName', 'Unknown User'),
+                            'emailAddress': user_data.get('emailAddress', 'No email available'),
+                            'role': 'Project Lead',
+                            'avatarUrl': user_data.get('avatarUrls', {}).get('48x48', '/static/images/Uncia2 1.jpg')
+                        })
+            except Exception as e:
+                logger.error(f"Error fetching project lead: {str(e)}")
+
+        return jsonify(team_members)
+
     except Exception as e:
-        logger.error(f"Error getting project team: {str(e)}")
-        return jsonify([])
+        logger.error(f"Error fetching team members: {str(e)}")
+        return jsonify({"error": f"Failed to fetch team members: {str(e)}"}), 500
 
 @app.route('/api/jira/project-budget')
 def get_jira_project_budget():
@@ -1553,60 +1598,165 @@ def validate_project():
 
 @app.route('/api/jira/new-timeline-data')
 def get_jira_new_timeline_data():
+    """
+    Returns data for the new horizontal timeline based on project progress.
+    """
+    project_key = request.args.get('projectKey')
+    if not project_key:
+        return jsonify({"error": "Project key is required"}), 400
+
+    # This is placeholder data. In a real application, you would fetch this from Jira or another source.
+    timeline_data = {
+        "nodes": [
+            {"name": "Register", "label": "1", "status": "completed"},
+            {"name": "Respond", "label": "2", "status": "completed"},
+            {"name": "Configure", "label": "3", "status": "completed"},
+            {"name": "Validate", "label": "4", "status": "current"},
+            {"name": "Test", "label": "5", "status": "pending"},
+            {"name": "Go-Live", "label": "6", "status": "pending"}
+        ]
+    }
+    return jsonify(timeline_data)
+
+@app.route('/api/jira/project-overview')
+def get_jira_project_overview():
+    """
+    Returns project overview data.
+    """
+    project_key = request.args.get('projectKey')
+    if not project_key:
+        return jsonify({"error": "Project key is required"}), 400
+    
+    # Placeholder data for project overview
+    overview_data = {
+        "description": f"This is a sample project overview for {project_key}. It includes general information about the project's goals, scope, and current status. The project aims to deliver a high-quality solution to meet client needs within the stipulated timeline and budget. Regular updates are provided to ensure transparency and stakeholder alignment."
+    }
+    return jsonify(overview_data)
+
+@app.route('/api/jira/key-metrics')
+def get_jira_key_metrics():
+    """
+    Returns key metrics data for a project.
+    """
+    project_key = request.args.get('projectKey')
+    if not project_key:
+        return jsonify({"error": "Project key is required"}), 400
+
+    # Placeholder data for key metrics
+    metrics_data = {
+        "totalTasks": 150,
+        "completedTasks": 95,
+        "openIssues": 12,
+        "overallProgress": 68
+    }
+    return jsonify(metrics_data)
+
+@app.route('/api/jira/deliverables')
+def get_jira_deliverables():
+    """
+    Returns a list of deliverables for a project.
+    """
+    project_key = request.args.get('projectKey')
+    if not project_key:
+        return jsonify({"error": "Project key is required"}), 400
+
+    # Placeholder data for deliverables
+    deliverables_data = [
+        {"name": "Phase 1 Report", "status": "Completed", "dueDate": "2024-06-30"},
+        {"name": "Module A Development", "status": "In Progress", "dueDate": "2024-07-15"},
+        {"name": "User Acceptance Testing", "status": "Pending", "dueDate": "2024-08-01"},
+        {"name": "Final Deployment", "status": "Pending", "dueDate": "2024-08-30"}
+    ]
+    return jsonify(deliverables_data)
+
+@app.route('/api/jira/team-members')
+def get_jira_team_members():
+    """Get team members for a project from Jira"""
     project_key = request.args.get('projectKey')
     if not project_key:
         return jsonify({"error": "Project key is required"}), 400
 
     try:
-        # Fetch all issues for the given project
-        jql = f'project = \"{project_key}\"'
-        response = make_jira_request(f"{JIRA_DOMAIN}/rest/api/3/search", params={'jql': jql, 'maxResults': 1000})
-        issues = response.json().get('issues', [])
+        # Get project roles
+        roles_url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}/role"
+        roles_response = make_jira_request(roles_url)
+        roles_data = roles_response.json()
+        
+        # Standard Jira project role IDs
+        # 10002: Project Administrators
+        # 10003: Project Members
+        # 10004: Project Viewers
+        role_ids = ['10002', '10003', '10004']
+        
+        team_members = []
+        processed_account_ids = set()  # To avoid duplicates
 
-        total_issues = len(issues)
-        completed_issues = 0
+        for role_id in role_ids:
+            if role_id in roles_data:
+                # Get members for this role
+                members_url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}/role/{role_id}"
+                members_response = make_jira_request(members_url)
+                members_data = members_response.json()
 
-        # Define your timeline columns and their corresponding Jira statuses
-        # You can customize these mappings based on your Jira workflow
-        timeline_columns = [
-            {"title": "Backlog", "jira_statuses": ["Backlog", "Selected for Development"]},
-            {"title": "To Do", "jira_statuses": ["To Do"]},
-            {"title": "In Progress", "jira_statuses": ["In Progress", "Development", "In Review", "Testing"]},
-            {"title": "Done", "jira_statuses": ["Done", "Closed", "Resolved"]}
-        ]
+                # Get role name
+                role_url = roles_data[role_id]
+                role_response = make_jira_request(role_url)
+                role_data = role_response.json()
+                role_name = role_data.get('name', 'Team Member')
 
-        processed_columns = []
-        for col in timeline_columns:
-            col_issues = [issue for issue in issues if issue['fields']['status']['name'] in col['jira_statuses']]
-            col_completed_issues = [issue for issue in col_issues if issue['fields']['status']['name'] in ["Done", "Closed", "Resolved"]]
-            
-            progress_percentage = (len(col_completed_issues) / len(col_issues) * 100) if len(col_issues) > 0 else 0
-            
-            status = "not-started"
-            if len(col_issues) > 0 and len(col_completed_issues) == len(col_issues):
-                status = "completed"
-            elif len(col_completed_issues) > 0 or len(col_issues) > 0:
-                status = "in-progress"
-            
-            processed_columns.append({
-                "title": col["title"],
-                "progress": round(progress_percentage),
-                "status": status
-            })
+                # Process each actor in the role
+                for actor in members_data.get('actors', []):
+                    if actor.get('type') == 'user' and actor['id'] not in processed_account_ids:
+                        try:
+                            # Get user details
+                            user_url = f"{JIRA_DOMAIN}/rest/api/3/user?accountId={actor['id']}"
+                            user_response = make_jira_request(user_url)
+                            user_data = user_response.json()
 
-            if col["title"] == "Done": # Assuming 'Done' column represents overall completion
-                completed_issues = len(col_issues)
+                            # Get user's avatar URL
+                            avatar_url = user_data.get('avatarUrls', {}).get('48x48', '/static/images/Uncia2 1.jpg')
 
-        overall_progress = (completed_issues / total_issues * 100) if total_issues > 0 else 0
+                            team_members.append({
+                                'displayName': user_data.get('displayName', 'Unknown User'),
+                                'emailAddress': user_data.get('emailAddress', 'No email available'),
+                                'role': role_name,
+                                'avatarUrl': avatar_url
+                            })
 
-        return jsonify({
-            "overallProgress": round(overall_progress),
-            "columns": processed_columns
-        })
+                            processed_account_ids.add(actor['id'])
+                        except Exception as e:
+                            logger.error(f"Error fetching user details for {actor['id']}: {str(e)}")
+                            continue
+
+        if not team_members:
+            # If no members found in standard roles, try to get project members directly
+            try:
+                project_url = f"{JIRA_DOMAIN}/rest/api/3/project/{project_key}"
+                project_response = make_jira_request(project_url)
+                project_data = project_response.json()
+                
+                # Get project lead
+                if project_data.get('lead'):
+                    lead_id = project_data['lead']['accountId']
+                    if lead_id not in processed_account_ids:
+                        user_url = f"{JIRA_DOMAIN}/rest/api/3/user?accountId={lead_id}"
+                        user_response = make_jira_request(user_url)
+                        user_data = user_response.json()
+                        
+                        team_members.append({
+                            'displayName': user_data.get('displayName', 'Unknown User'),
+                            'emailAddress': user_data.get('emailAddress', 'No email available'),
+                            'role': 'Project Lead',
+                            'avatarUrl': user_data.get('avatarUrls', {}).get('48x48', '/static/images/Uncia2 1.jpg')
+                        })
+            except Exception as e:
+                logger.error(f"Error fetching project lead: {str(e)}")
+
+        return jsonify(team_members)
 
     except Exception as e:
-        logger.error(f"Error fetching new timeline data: {str(e)}")
-        return jsonify({"error": "Failed to fetch timeline data", "details": str(e)}), 500
+        logger.error(f"Error fetching team members: {str(e)}")
+        return jsonify({"error": f"Failed to fetch team members: {str(e)}"}), 500
 
 if __name__ == '__main__':
     logger.info("🚀 Starting UNCIA Dashboard...")
