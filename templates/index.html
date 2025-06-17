@@ -817,55 +817,55 @@
         }
 
         .timeline-node-circle {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 1.6rem; /* Slightly increased size for perfect circle */
+            height: 1.6rem; /* Slightly increased size for perfect circle */
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.5); /* Default translucent white */
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.5rem; /* Ensure proper spacing between circle and label */
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
             border: 2px solid white;
             transition: background-color 0.3s ease, border-color 0.3s ease;
+            box-sizing: border-box; /* Ensure padding and border are included in width/height */
+            aspect-ratio: 1 / 1; /* Force a 1:1 aspect ratio for perfect circle */
+            flex-shrink: 0; /* Prevent shrinking in flex container */
         }
 
-        .timeline-node-circle.completed {
-            background-color: #22c55e;
-            border-color: #16a34a;
+        .timeline-node-circle .check-icon {
+            width: 1rem;
+            height: 1rem;
+            fill: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Removed any margins here */
         }
 
-        .timeline-node-circle.in-progress {
-            background-color: #3b82f6;
-            border-color: #2563eb;
-        }
-
-        .timeline-node-circle.not-started {
-            background-color: #6b7280;
-            border-color: #4b5563;
-        }
-
-        .timeline-node-circle.pending {
-            background-color: #eab308;
-            border-color: #d97706;
-        }
-
-        .timeline-node-circle .inner-dot {
-            width: 0.75rem;
-            height: 0.75rem;
-            border-radius: 50%;
-            background-color: white;
-            display: block;
+        .timeline-node-number {
+            font-size: 1rem; /* Adjusted for better alignment with checkmark */
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            line-height: 1; /* Crucial for vertical centering of text */
+            /* Removed any margins or padding here */
         }
 
         .timeline-node-label {
             color: rgba(255, 255, 255, 0.9);
             font-size: 0.85rem;
             font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
+            white-space: normal; /* Allow text to wrap */
+            overflow: visible; /* Ensure content is not hidden */
+            text-overflow: clip; /* Prevent ellipsis */
+            max-width: 100%; /* Keep it within its container */
+            text-align: center; /* Ensure labels are centered under nodes */
+            margin-top: 0.5rem; /* Re-added margin for separation from circle */
         }
 
         .timeline-node-progress {
@@ -887,77 +887,73 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin: 4rem 0;
+            max-width: 1200px; /* Adjust as needed */
+            margin: 2rem auto;
             position: relative;
+            padding: 0 1rem;
         }
 
         .timeline-progress {
             position: absolute;
             height: 4px;
-            background: linear-gradient(to right, #4CAF50, #8A2BE2); /* Green to Purple */
-            background-size: 200% 100%; /* For the animation */
-            z-index: 0;
+            background: linear-gradient(to right, var(--color-uncia-purple), var(--color-uncia-dark-purple));
+            border-radius: 2px;
+            left: 0;
             top: 50%;
             transform: translateY(-50%);
-            left: 0;
-            width: 50%; /* Example: adjust dynamically based on progress */
-            border-radius: 2px;
-            transition: width 0.7s ease-out; /* Smooth transition for width */
-            animation: gradientPulse 3s infinite alternate; /* Pulsating gradient animation */
-        }
-
-        @keyframes gradientPulse {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
+            width: 0%; /* Initial width for animation */
+            transition: width 0.7s ease-out;
         }
 
         .timeline-node {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 1;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: nodeFadeIn 0.5s ease-out forwards;
-            /* animation-delay will be set via JS */
-        }
-
-        @keyframes nodeFadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+                z-index: 1;
+                /* This is where 'min-width: 80px;' used to be. It should be GONE. */
+                text-align: center; /* Ensure labels are centered under nodes */
             }
+            
+
+        .timeline-line {
+            flex-grow: 1;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2); /* Light gray for uncompleted parts */
+            margin: 0 0.5rem;
         }
 
-        .node-circle {
-            width: 40px;
-            height: 40px;
-            background-color: #581c87; /* Dark purple from background */
+        .timeline-line.completed {
+            background-color: #22c55e; /* Green for completed segments */
+        }
+
+        .timeline-line.current-segment {
+            background: linear-gradient(to right, #22c55e, #8B5CF6); /* Green to purple gradient for current */
+        }
+
+        .timeline-node-circle {
+            width: 1.6rem; /* Slightly increased size for perfect circle */
+            height: 1.6rem; /* Slightly increased size for perfect circle */
             border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5); /* Default translucent white */
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-weight: bold;
-            color: white;
-            border: 2px solid #9333ea; /* Purple border */
-            transition: all 0.3s ease;
-            aspect-ratio: 1/1; /* Ensure perfect circle aspect ratio */
+            justify-content: center;
+            margin-bottom: 0.5rem; /* Ensure proper spacing between circle and label */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            box-sizing: border-box; /* Ensure padding and border are included in width/height */
+            aspect-ratio: 1 / 1; /* Force a 1:1 aspect ratio for perfect circle */
+            flex-shrink: 0; /* Prevent shrinking in flex container */
         }
 
-        .node-circle.completed {
-            background-color: #22c55e; /* Green for completed */
-            border-color: #22c55e;
-            animation: nodeCompleteBounce 0.4s ease-out;
+        .timeline-node-circle.completed {
+            background-color: #22c55e;
+            border-color: #16a34a;
         }
 
-        @keyframes nodeCompleteBounce {
-            0% { transform: scale(0.8); opacity: 0; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); }
-        }
-
-        .node-circle.current {
+        .timeline-node-circle.current {
             background-color: #8B5CF6; /* Lighter purple for current */
             border-color: #8B5CF6;
             animation: nodeCurrentPulse 1.5s infinite alternate;
@@ -968,22 +964,54 @@
             100% { transform: scale(1.05); }
         }
 
-        .node-circle .check-icon {
-            width: 24px;
-            height: 24px;
+        .timeline-node-circle.pending {
+            background-color: rgba(255, 255, 255, 0.1); /* Very light translucent for pending */
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .timeline-node-circle .checkmark-icon {
+            width: 1rem;
+            height: 1rem;
             fill: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-node-number {
+            font-size: 1rem; /* Adjusted for better alignment with checkmark */
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            line-height: 1; /* Crucial for vertical centering of text */
+        }
+
+        .timeline-node-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: normal; /* Allow text to wrap */
+            overflow: visible; /* Ensure content is not hidden */
+            text-overflow: clip; /* Prevent ellipsis */
+            max-width: 100%; /* Keep it within its container */
+            text-align: center; /* Ensure labels are centered under nodes */
+            margin-top: 0.5rem; /* Re-added margin for separation from circle */
         }
 
         .node-label {
             margin-top: 0.5rem;
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.7);
+            text-align: center; /* Ensure labels are centered under nodes */
         }
 
         .node-circle.completed + .node-label {
             color: white;
         }
-        /* End New Timeline Styles */
 
         /* Project Details Specific Styles */
         .project-description-text {
@@ -1173,6 +1201,40 @@
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.9rem;
         }
+
+        .timeline-node-circle .check-icon {
+            width: 1rem;
+            height: 1rem;
+            fill: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-node-number {
+            font-size: 1rem; /* Adjusted for better alignment with checkmark */
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            line-height: 1; /* Crucial for vertical centering of text */
+            /* Removed any margins or padding here */
+        }
+
+        .timeline-node-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: normal; /* Allow text to wrap */
+            overflow: visible; /* Ensure content is not hidden */
+            text-overflow: clip; /* Prevent ellipsis */
+            max-width: 100%; /* Keep it within its container */
+            text-align: center; /* Ensure labels are centered under nodes */
+            margin-top: 0.5rem; /* Re-added margin for separation from circle */
+        }
     </style>
 </head>
 <body>
@@ -1235,38 +1297,9 @@
             </div>
 
             <!-- New Timeline HTML -->
-            <div class="timeline-container">
+            <div class="timeline-container" id="new-project-timeline">
                 <div class="timeline-progress"></div>
-                <div class="timeline-node">
-                    <div class="node-circle completed">
-                        <svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>
-                    </div>
-                    <span class="node-label">Register</span>
-                </div>
-                <div class="timeline-node">
-                    <div class="node-circle completed">
-                        <svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>
-                    </div>
-                    <span class="node-label">Respond</span>
-                </div>
-                <div class="timeline-node">
-                    <div class="node-circle completed">
-                        <svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>
-                    </div>
-                    <span class="node-label">Configure</span>
-                </div>
-                <div class="timeline-node">
-                    <div class="node-circle current">4</div>
-                    <span class="node-label">Validate</span>
-                </div>
-                <div class="timeline-node">
-                    <div class="node-circle">5</div>
-                    <span class="node-label">Test</span>
-                </div>
-                <div class="timeline-node">
-                    <div class="node-circle">6</div>
-                    <span class="node-label">Go-Live</span>
-                </div>
+                <!-- Nodes will be populated by JavaScript -->
             </div>
             <!-- End New Timeline HTML -->
         </div>
@@ -2119,66 +2152,58 @@
         }
 
         // New function to update the new timeline
-        function updateNewTimeline(timelineData) {
-            if (!timelineData || !timelineData.nodes) return;
-
-            const timelineContainer = document.querySelector('.timeline-container');
-            const timelineProgress = document.querySelector('.timeline-progress');
-            if (!timelineContainer || !timelineProgress) {
-                console.error("Timeline container or progress bar not found!");
+        function updateNewTimeline() {
+            const timelineContainer = document.getElementById('new-project-timeline');
+            if (!timelineContainer) {
+                console.error("Timeline container not found.");
                 return;
             }
+            timelineContainer.innerHTML = ''; // Clear existing nodes
 
-            // Clear existing nodes, but keep the progress bar
-            timelineContainer.querySelectorAll('.timeline-node').forEach(node => node.remove());
+            // Define the new timeline nodes with specified labels and initial statuses
+            const newTimelineNodes = [
+                { name: "Take Over Form", label: "1", status: "completed" },
+                { name: "Day 0", label: "2", status: "current" },
+                { name: "GO LIVE INITIATION", label: "3", status: "completed" },
+                { name: "Readiness for Day 1", label: "4", status: "pending" },
+                { name: "Solution Design", label: "5", status: "pending" },
+                { name: "Reports", label: "6", status: "pending" },
+                { name: "Readiness for GO LIVE", label: "7", status: "pending" },
+                { name: "GO LIVE", label: "8", status: "pending" }
+            ];
 
-            const totalNodes = timelineData.nodes.length;
-            const completedNodes = timelineData.nodes.filter(node => node.status === 'completed').length;
-            const currentNodeIndex = timelineData.nodes.findIndex(node => node.status === 'current');
-
-            // Calculate progress for the progress bar
-            // If there's a current node, progress goes up to that node's position
-            // Otherwise, it's based on completed nodes
-            let progressPercentage = 0;
-            if (totalNodes > 1) {
-                if (currentNodeIndex !== -1) {
-                    progressPercentage = (currentNodeIndex / (totalNodes - 1)) * 100;
-                } else if (completedNodes === totalNodes) {
-                    progressPercentage = 100; // All completed
-                } else if (completedNodes > 0) {
-                    // If some are completed but no current, progress to last completed node
-                    progressPercentage = ((completedNodes - 1) / (totalNodes - 1)) * 100;
-                }
-            }
-            timelineProgress.style.width = `${progressPercentage}%`;
-
-            timelineData.nodes.forEach((node, index) => {
+            // Use the newTimelineNodes instead of the data from the backend
+            newTimelineNodes.forEach((node, index) => {
                 const nodeElement = document.createElement('div');
-                nodeElement.classList.add('timeline-node');
-                nodeElement.style.animationDelay = `${index * 0.1}s`; // Staggered animation delay
-
-                const nodeCircle = document.createElement('div');
-                nodeCircle.classList.add('node-circle');
-
+                let statusClass = '';
                 if (node.status === 'completed') {
-                    nodeCircle.classList.add('completed');
-                    nodeCircle.innerHTML = '<svg class="check-icon" viewBox="0 0 24 24"><path d="M9.64 18.06l-4.52-4.52L6.5 12.6l3.14 3.14L17.5 9.1l1.38 1.38z"></path></svg>';
+                    statusClass = 'completed';
                 } else if (node.status === 'current') {
-                    nodeCircle.classList.add('current');
-                    nodeCircle.textContent = node.label;
+                    statusClass = 'current';
                 } else {
-                    nodeCircle.textContent = node.label;
+                    statusClass = 'pending';
                 }
 
-                const nodeLabel = document.createElement('span');
-                nodeLabel.classList.add('node-label');
-                nodeLabel.textContent = node.name;
-
-                nodeElement.appendChild(nodeCircle);
-                nodeElement.appendChild(nodeLabel);
+                nodeElement.classList.add('timeline-node');
+                nodeElement.innerHTML = `
+                    <div class="timeline-node-circle ${statusClass}">
+                        ${node.status === 'completed' ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon checkmark-icon"><path fill-rule="evenodd" d="M2.75 12c0-1.15.111-2.261.328-3.327l-3.326 3.327 7.071 7.071 14.142-14.142c-.22.46-.46.906-.677 1.353l-12.793 12.793-5.657-5.657-2.121 2.121a1.5 1.5 0 0 1-2.121-2.121zM9 16.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0z" clip-rule="evenodd" /></svg>' : `<span class="timeline-node-number">${node.label}</span>`}
+                    </div>
+                    <div class="timeline-node-label">${node.name}</div>
+                `;
                 timelineContainer.appendChild(nodeElement);
+
+                if (index < newTimelineNodes.length - 1) {
+                    const lineElement = document.createElement('div');
+                    lineElement.classList.add('timeline-line');
+                    if (newTimelineNodes[index].status === 'completed') {
+                        lineElement.classList.add('completed');
+                    } else if (newTimelineNodes[index].status === 'current') {
+                        lineElement.classList.add('current-segment');
+                    }
+                    timelineContainer.appendChild(lineElement);
+                }
             });
-            console.log('✅ New Timeline updated successfully', timelineData);
         }
 
         // Existing function to fetch Kanban data
@@ -2298,13 +2323,13 @@
 
             try {
                 // Fetch all data concurrently
-                const [statsData, healthData, actionItemsData, risksData, kanbanData, newTimelineData, overviewData, metricsData, deliverablesData, teamMembersData] = await Promise.all([
+                const [statsData, healthData, actionItemsData, risksData, kanbanData, /* newTimelineData, */ overviewData, metricsData, deliverablesData, teamMembersData] = await Promise.all([
                     fetchData(`/api/jira/project-stats?projectKey=${projectKey}`),
                     fetchData(`/api/jira/project-health?projectKey=${projectKey}`),
                     fetchData(`/api/jira/action-items?projectKey=${projectKey}`),
                     fetchData(`/api/jira/risks?projectKey=${projectKey}`),
                     fetchKanbanData(), // This already uses currentProject
-                    fetchData(`/api/jira/new-timeline-data?projectKey=${projectKey}`),
+                    // fetchData(`/api/jira/new-timeline-data?projectKey=${projectKey}`),
                     fetchProjectOverview(), // Fetch project overview data
                     fetchKeyMetrics(), // Fetch key metrics data
                     fetchDeliverables(), // Fetch deliverables data
@@ -2317,7 +2342,7 @@
                 updateActionItems(actionItemsData);
                 updateRisks(risksData);
                 updateKanbanBoard(kanbanData); // Update the Kanban board
-                updateNewTimeline(newTimelineData); // Update the new timeline
+                updateNewTimeline(); // Update the new timeline
                 updateProjectOverview(overviewData); // Update project overview
                 updateKeyMetrics(metricsData); // Update key metrics
                 updateDeliverables(deliverablesData); // Update deliverables
@@ -2514,6 +2539,6 @@
                 deliverablesList.appendChild(listItem);
             });
         }
-    </script>
+</script>
 </body>
 </html>
