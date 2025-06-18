@@ -24,6 +24,7 @@
             overflow: hidden;
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%);
             backdrop-filter: blur(20px);
+            padding-bottom: 5rem; /* Increase this value as needed */
         }
 
         .header-container {
@@ -184,6 +185,7 @@
         .tab-content.active {
             display: block;
             animation: fadeIn 0.3s ease-in;
+            margin-top: 2.5rem; /* or increase as needed, e.g., 3rem */
         }
 
         @keyframes fadeIn {
@@ -1234,6 +1236,26 @@
             max-width: 100%; /* Keep it within its container */
             text-align: center; /* Ensure labels are centered under nodes */
             margin-top: 0.5rem; /* Re-added margin for separation from circle */
+        }
+
+        .main-content,
+        .tab-content.active,
+        #overview.tab-content.active {
+            margin-top: 3.5rem; /* Increase this value if needed */
+        }
+
+        @media (min-width: 768px) {
+          #overview.tab-content.active {
+            margin-top: 3.5rem;
+          }
+        }
+
+        #overview.tab-content.active {
+            margin-top: 4.5rem !important;
+        }
+
+        #overview.tab-content.active {
+            padding-top: 4.5rem !important;
         }
     </style>
 </head>
@@ -2539,6 +2561,6 @@
                 deliverablesList.appendChild(listItem);
             });
         }
-</script>
+    </script>
 </body>
 </html>
